@@ -2,13 +2,13 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="24mm"
-   height="24mm"
-   viewBox="0 0 24 24"
+   width="108mm"
+   height="108mm"
+   viewBox="0 0 108 108"
    version="1.1"
    id="svg1"
    inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
-   sodipodi:docname="inkscape_dynamic.svg"
+   sodipodi:docname="inkscape_monochromatic.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -23,10 +23,10 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="6.077547"
-     inkscape:cx="34.471144"
-     inkscape:cy="59.728045"
-     inkscape:window-width="1024"
+     inkscape:zoom="1.654941"
+     inkscape:cx="180.97322"
+     inkscape:cy="178.85834"
+     inkscape:window-width="1641"
      inkscape:window-height="1396"
      inkscape:window-x="0"
      inkscape:window-y="0"
@@ -63,23 +63,9 @@
   </defs>
   <g
      inkscape:groupmode="layer"
-     id="layer6"
-     inkscape:label="Background"
-     style="fill:#1a1a1a">
-    <rect
-       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0;stroke-dasharray:none;stroke-opacity:1"
-       id="rect10138"
-       width="24"
-       height="24"
-       x="0"
-       y="0"
-       inkscape:label="Rect" />
-  </g>
-  <g
-     inkscape:groupmode="layer"
      id="layer4"
      inkscape:label="Foreground"
-     transform="matrix(0.7,0,0,0.7,3.8249999,3.5999998)"
+     transform="matrix(1.925,0,0,1.925,30.9,30.9)"
      inkscape:highlight-color="#e48e21">
     <circle
        style="display:inline;fill:#f9f9f9;fill-opacity:1;stroke:none;stroke-width:0;stroke-dasharray:none;stroke-opacity:1"

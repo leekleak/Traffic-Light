@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Traffic Light</string>
+    <string name="today">Today</string>
+    <string name="history">History</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="cellular">Cellular</string>
+    <string name="fly">A fly</string>
+    <string name="nothing_here">There\'s nothing here yet…</string>
+    <string name="notification_permission_required">Notification permission required</string>
+    <string name="notification_permission_description">The notification permission is required for the network speed icon in the status bar to work.</string>
+    <string name="grant">Grant</string>
+    <string name="permissions">Permissions</string>
+</resources>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Šviesoforas</string>
+    <string name="notification_permission_description">Leidimas skelbti pranešimus yra reikalingas tam, kad galėtume rodyti interneto greitį viršutinėje juostoje.</string>
+    <string name="grant">Suteikti</string>
+    <string name="today">Šiandien</string>
+    <string name="history">Istorija</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="cellular">Mobilieji</string>
+    <string name="fly">Musė</string>
+    <string name="nothing_here">Čia dar tuščia...</string>
+    <string name="notification_permission_required">Reikia leidimo skelbti pranešimus</string>
+    <string name="permissions">Leidimai</string>
+</resources>

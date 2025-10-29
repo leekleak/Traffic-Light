@@ -170,6 +170,8 @@ fun SummaryItem(
         horizontalArrangement = Arrangement.Center,
     ) {
         val text = DataSize(value = data().toFloat(), precision = 2).toStringParts()
+
+        // When there's a number like 400, it takes up much more space than eg. 111 and it looks cramped
         val bigLetterCount = text.count {"04689".contains(it)}
         val spacing = when (bigLetterCount) {
             3 -> ((-2).sp)

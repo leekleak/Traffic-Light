@@ -14,6 +14,9 @@ data class DataSize (
     val speed: Boolean = false,
     val precision: Int = 1
 ) {
+    val precisionDec: Double
+        get() = 10.0.pow(precision)
+
 
     init {
         var i = DataSizeUnit.entries.indexOf(unit)
@@ -25,7 +28,7 @@ data class DataSize (
     }
 
     private fun setPrecision(size: Float): String {
-        return String.format("%.${precision}f", size)
+        return ((size * precisionDec).toInt().toFloat() / precisionDec).toString()
     }
 
     fun getComparisonValue(): DataSize {
@@ -49,7 +52,7 @@ data class DataSize (
     fun toStringParts(): List<String> {
         return listOf(
             value.toInt().toString(),
-            (value * 10.0.pow(precision) % 10.0.pow(precision)).toInt().toString(),
+            (value * precisionDec % precisionDec).toInt().toString(),
             unit.toString()
         )
     }

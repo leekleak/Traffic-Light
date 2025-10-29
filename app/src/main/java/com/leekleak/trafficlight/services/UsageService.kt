@@ -133,15 +133,14 @@ class UsageService : Service(), KoinComponent {
         job = serviceScope.launch {
             val trafficSnapshot = TrafficSnapshot()
             trafficSnapshot.updateSnapshot()
-            var time: Long
+            var nextTick = System.nanoTime()
             while (true) {
-                time = System.nanoTime()
                 trafficSnapshot.updateSnapshot()
-
                 if (screenOn) launch { updateNotification(trafficSnapshot) }
                 launch { updateDatabase(trafficSnapshot) }
 
-                delay(1000 - (System.nanoTime() - time) / 1000000)  // Updates will drift by a couple milliseconds each loop but that's probably ok
+                nextTick += 1_000_000_000L
+                delay((nextTick - System.nanoTime()) / 1_000_000)
             }
         }
     }

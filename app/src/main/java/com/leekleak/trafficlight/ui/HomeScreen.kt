@@ -170,18 +170,24 @@ fun SummaryItem(
         horizontalArrangement = Arrangement.Center,
     ) {
         val text = DataSize(value = data().toFloat(), precision = 2).toStringParts()
-        if (text.size < 3) return
+        val bigLetterCount = text.count {"04689".contains(it)}
+        val spacing = when (bigLetterCount) {
+            3 -> ((-2).sp)
+            2 -> ((-1).sp)
+            else -> 0.sp
+        }
 
         Text(
             fontSize = 76.sp,
-            text = text[0].padStart(2, '0'),
+            text = text[0],
             fontFamily = chonkyFont(),
+            letterSpacing = spacing,
             color = tint
         )
         Column (
             modifier = Modifier
                 .fillMaxHeight()
-                .padding(top = 6.dp, start = 4.dp),
+                .padding(top = 6.dp, start = 2.dp),
             verticalArrangement = Arrangement.spacedBy((-8).dp)
         ) {
             Text(

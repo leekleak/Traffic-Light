@@ -232,11 +232,10 @@ class UsageService : Service(), KoinComponent {
         canvas.drawText(speed, 48f, 56f, paint)
 
         paint.apply {
-            textSize = 48f
-            textAlign = Paint.Align.LEFT
+            textSize = 46f
             letterSpacing = 0f
         }
-        canvas.drawText(unit, 0f, 96f, paint)
+        canvas.drawText(unit, 48f, 96f, paint)
 
         return IconCompat.createWithBitmap(bitmap)
     }

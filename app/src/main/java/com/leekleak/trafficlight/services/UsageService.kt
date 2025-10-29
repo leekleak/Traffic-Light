@@ -23,6 +23,7 @@ import com.leekleak.trafficlight.database.DayUsageRepository
 import com.leekleak.trafficlight.database.HourUsage
 import com.leekleak.trafficlight.database.TrafficSnapshot
 import com.leekleak.trafficlight.util.SizeFormatter
+import com.leekleak.trafficlight.util.SizeFormatter.Companion.smartFormat
 import com.leekleak.trafficlight.util.clipAndPad
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -39,7 +40,6 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
-
 class UsageService : Service(), KoinComponent {
     private val serviceScope = CoroutineScope(Dispatchers.IO)
     private var job: Job? = null
@@ -54,8 +54,6 @@ class UsageService : Service(), KoinComponent {
         .setSilent(true)
         .setWhen(Long.MAX_VALUE) // Keep above other notifications
         .setShowWhen(false) // Hide timestamp
-
-    private var formatter = SizeFormatter(true, 0)
 
     override fun onBind(intent: Intent): IBinder? {
         return null
@@ -175,12 +173,12 @@ class UsageService : Service(), KoinComponent {
     private fun updateNotification(trafficSnapshot: TrafficSnapshot?) {
         if (
             trafficSnapshot != null &&
-            formatter.format(lastSnapshot.totalSpeed) ==
-            formatter.format(trafficSnapshot.totalSpeed) &&
-            formatter.format(lastSnapshot.downSpeed) ==
-            formatter.format(trafficSnapshot.downSpeed) &&
-            formatter.format(lastSnapshot.upSpeed) ==
-            formatter.format(trafficSnapshot.upSpeed)
+            smartFormat(lastSnapshot.totalSpeed, true) ==
+            smartFormat(trafficSnapshot.totalSpeed, true) &&
+            smartFormat(lastSnapshot.downSpeed, true) ==
+            smartFormat(trafficSnapshot.downSpeed, true) &&
+            smartFormat(lastSnapshot.upSpeed, true) ==
+            smartFormat(trafficSnapshot.upSpeed, true)
         ) {
             Log.i("UsageService", "Skipped notification update")
             return
@@ -218,7 +216,7 @@ class UsageService : Service(), KoinComponent {
         val bitmap = createBitmap(96, 96)
         val canvas = NativeCanvas(bitmap)
 
-        val text = formatter.format(snapshot.totalSpeed)
+        val text = smartFormat(snapshot.totalSpeed, true)
         val speed = text.substring(0, text.indexOfFirst { it.isLetter() })
         val unit = text.substring(text.indexOfFirst { it.isLetter() })
 

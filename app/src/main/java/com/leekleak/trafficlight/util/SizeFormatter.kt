@@ -12,7 +12,7 @@ data class DataSize (
     var value: Float,
     var unit: DataSizeUnit = DataSizeUnit.B,
     val speed: Boolean = false,
-    val precision: Int = 1
+    var precision: Int = 1
 ) {
     val precisionDec: Double
         get() = 10.0.pow(precision)
@@ -27,8 +27,9 @@ data class DataSize (
         unit = DataSizeUnit.entries[i]
     }
 
-    private fun setPrecision(size: Float): String {
-        return ((size * precisionDec).toInt().toFloat() / precisionDec).toString()
+    private fun applyPrecision(size: Float): String {
+        return if (precision == 0) size.toInt().toString()
+            else ((size * precisionDec).toInt().toFloat() / precisionDec).toString() // Round down
     }
 
     fun getComparisonValue(): DataSize {
@@ -45,7 +46,7 @@ data class DataSize (
         val outValue = if (value < 1024 && unit == DataSizeUnit.B) {
             unit = DataSizeUnit.KB
              if (value > 0) "<1" else "0"
-        } else setPrecision(value)
+        } else applyPrecision(value)
         return "$outValue$unit${if (speed) "/s" else ""}"
     }
 
@@ -65,5 +66,13 @@ class SizeFormatter (
     fun format(size: Number): String {
         val size = DataSize(size.toFloat(), DataSizeUnit.B, speed, precision)
         return size.toString()
+    }
+
+    companion object {
+        fun smartFormat(size: Number, speed: Boolean): String {
+            val size = DataSize(size.toFloat(), DataSizeUnit.B, speed)
+            size.precision = if (size.value < 10 && size.unit >= DataSizeUnit.MB) 1 else 0
+            return size.toString()
+        }
     }
 }

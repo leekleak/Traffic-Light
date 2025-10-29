@@ -503,7 +503,7 @@ fun getHourFromMillis(millis: Long): Int {
     return LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()).hour
 }
 
-fun classyFont(): FontFamily = customFont(R.font.mendlserif)
+fun classyFont(): FontFamily = customFont(R.font.mendl_serif)
 fun chonkyFont(): FontFamily = customFont(R.font.jaro)
 
 @OptIn(ExperimentalTextApi::class)

@@ -226,7 +226,7 @@ class UsageService : Service(), KoinComponent {
             color = ContextCompat.getColor(this@UsageService, R.color.white)
             textSize = 72f
             textAlign = Paint.Align.CENTER
-            typeface = resources.getFont(R.font.robotocondensedsemibold)
+            typeface = resources.getFont(R.font.roboto_condensed_semi_bold)
             letterSpacing = -0.05f
         }
         canvas.drawText(speed, 48f, 56f, paint)

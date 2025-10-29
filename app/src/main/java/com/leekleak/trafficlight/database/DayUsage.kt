@@ -17,7 +17,10 @@ import java.time.LocalDate
 data class DayUsage(
     @PrimaryKey val date: LocalDate = LocalDate.now(),
     val hours: MutableMap<Long, HourUsage> = mutableMapOf()
-)
+) {
+    fun totalWifi(): Long = hours.values.sumOf { it.wifi }
+    fun totalCellular(): Long = hours.values.sumOf { it.cellular }
+}
 
 @Dao
 interface DayUsageDao {

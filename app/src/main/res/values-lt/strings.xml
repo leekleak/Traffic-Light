@@ -11,4 +11,5 @@
     <string name="nothing_here">Čia dar tuščia...</string>
     <string name="notification_permission_required">Reikia leidimo skelbti pranešimus</string>
     <string name="permissions">Leidimai</string>
+    <string name="speed">Greitis: %1$s</string>
 </resources>

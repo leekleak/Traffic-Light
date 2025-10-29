@@ -267,13 +267,13 @@ fun LazyListScope.TodayOverview(viewModel: HomeScreenVM) {
                     modifier = Modifier.weight(1f),
                     painter = painterResource(R.drawable.wifi),
                     tint = MaterialTheme.colorScheme.primary,
-                    data = { usage.hours.entries.sumOf { it.value.wifi } }
+                    data = { usage.totalWifi() }
                 )
                 SummaryItem(
                     modifier = Modifier.weight(1f),
                     painter = painterResource(R.drawable.cellular),
                     tint = MaterialTheme.colorScheme.tertiary,
-                    data = { usage.hours.entries.sumOf { it.value.cellular } }
+                    data = { usage.totalCellular() }
                 )
             }
             Box(
@@ -333,9 +333,6 @@ fun HistoryItem(
     selected: Int,
     onClick: (i: Int) -> Unit
 ) {
-    val wifi = usage.hours.entries.sumOf { it.value.wifi }
-    val cellular = usage.hours.entries.sumOf { it.value.cellular }
-
     Column (
         modifier = Modifier
             .clip(MaterialTheme.shapes.large)
@@ -379,7 +376,7 @@ fun HistoryItem(
                     if (!selected) {
                         LineGraph(
                             maximum = maximum,
-                            data = Pair(wifi, cellular)
+                            data = Pair(usage.totalWifi(), usage.totalCellular())
                         )
                     } else {
                         Row (
@@ -395,14 +392,14 @@ fun HistoryItem(
                                 description = stringResource(R.string.wifi),
                                 bgTint = MaterialTheme.colorScheme.primary,
                                 tint = MaterialTheme.colorScheme.onPrimary,
-                                value = wifi
+                                value = usage.totalWifi()
                             )
                             DataBadge(
                                 iconId = R.drawable.cellular,
                                 description = stringResource(R.string.cellular),
                                 bgTint = MaterialTheme.colorScheme.tertiary,
                                 tint = MaterialTheme.colorScheme.onTertiary,
-                                value = cellular
+                                value = usage.totalCellular()
                             )
                         }
                     }

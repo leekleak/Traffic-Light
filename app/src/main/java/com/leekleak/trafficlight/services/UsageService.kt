@@ -190,17 +190,25 @@ class UsageService : Service(), KoinComponent {
 
         lastSnapshot = snapshot.copy()
 
-        val formatter = SizeFormatter(true, 0)
-        val title = "Total speed ${formatter.format(snapshot.totalSpeed)}"
+        val todayUsage = runBlocking { dayUsageRepo.getTodayUsage().first() }
+        val speedFormatter = SizeFormatter(true, 0)
+        val sizeFormatter = SizeFormatter(false, 2)
+        val title = getString(R.string.speed, speedFormatter.format(snapshot.totalSpeed))
         val spacing = 18
+        val messageShort =
+            "\uD83D\uDEDC: ${sizeFormatter.format(todayUsage?.totalWifi() ?: 0)}".clipAndPad(spacing) +
+            "\uD83D\uDCF6: ${sizeFormatter.format(todayUsage?.totalCellular() ?: 0)}".clipAndPad(spacing)
         val message =
-                "⬇\uFE0F: ${formatter.format(snapshot.downSpeed)}".clipAndPad(spacing) +
-                "⬆\uFE0F: ${formatter.format(snapshot.upSpeed)}".clipAndPad(spacing)
+            "\uD83D\uDEDC: ${sizeFormatter.format(todayUsage?.totalWifi() ?: 0)}\n".clipAndPad(spacing) +
+            "\uD83D\uDCF6: ${sizeFormatter.format(todayUsage?.totalCellular() ?: 0)}\n".clipAndPad(spacing) +
+            "⬇\uFE0F: ${speedFormatter.format(snapshot.downSpeed)}\n".clipAndPad(spacing) +
+            "⬆\uFE0F: ${speedFormatter.format(snapshot.upSpeed)}\n".clipAndPad(spacing)
 
         notification = notificationBuilder
             .setSmallIcon(createIcon(snapshot))
             .setContentTitle(title)
-            .setContentText(message)
+            .setContentText(messageShort)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
             .build()
         notification?.flags = Notification.FLAG_ONGOING_EVENT or Notification.FLAG_NO_CLEAR
         notificationManager?.notify(NOTIFICATION_ID, notification)

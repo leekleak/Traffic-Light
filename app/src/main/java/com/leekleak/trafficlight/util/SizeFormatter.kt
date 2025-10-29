@@ -1,6 +1,5 @@
 package com.leekleak.trafficlight.util
 
-import java.lang.Math.pow
 import kotlin.math.ceil
 import kotlin.math.pow
 
@@ -40,9 +39,9 @@ data class DataSize (
     }
 
     override fun toString(): String {
-        val outValue = if (value < 1024 && value > 0 && unit == DataSizeUnit.B) {
+        val outValue = if (value < 1024 && unit == DataSizeUnit.B) {
             unit = DataSizeUnit.KB
-            "<1"
+             if (value > 0) "<1" else "0"
         } else setPrecision(value)
         return "$outValue$unit${if (speed) "/s" else ""}"
     }

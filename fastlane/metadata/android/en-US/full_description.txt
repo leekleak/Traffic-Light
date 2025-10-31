@@ -1,0 +1,1 @@
+<p>Traffic Light is an open-source tool inspired by <i>Internet Speed Meter</i>. It's incredibly easy to use and has a satisfying UI based on Material 3 Expressive.</p>

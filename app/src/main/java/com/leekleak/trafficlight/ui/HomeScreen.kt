@@ -7,6 +7,7 @@ import android.provider.Settings
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandVertically
@@ -43,6 +44,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +59,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -74,6 +77,7 @@ import com.leekleak.trafficlight.util.DataSize
 import com.leekleak.trafficlight.util.SizeFormatter
 import com.leekleak.trafficlight.util.padHour
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -163,10 +167,20 @@ fun SummaryItem(
     tint: Color,
     data: () -> Long
 ) {
+    val scope = rememberCoroutineScope()
+    val animation = remember { Animatable(0f) }
+    val haptic = LocalHapticFeedback.current
     Row (
         modifier = modifier
             .clip(MaterialTheme.shapes.large)
-            .background(MaterialTheme.colorScheme.surfaceContainer),
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .clickable {
+                scope.launch {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    animation.animateTo(64f)
+                    animation.animateTo(0f)
+                }
+            },
         horizontalArrangement = Arrangement.Center,
     ) {
         val text = DataSize(value = data().toFloat(), precision = 2).toStringParts()
@@ -182,7 +196,7 @@ fun SummaryItem(
         Text(
             fontSize = 76.sp,
             text = text[0],
-            fontFamily = chonkyFont(),
+            fontFamily = chonkyFont(animation.value),
             letterSpacing = spacing,
             color = tint
         )
@@ -195,7 +209,7 @@ fun SummaryItem(
             Text(
                 fontSize = 42.sp,
                 text = "." + text[1].padEnd(2, '0'),
-                fontFamily = chonkyFont(),
+                fontFamily = chonkyFont(animation.value),
                 color = tint
             )
             Row(
@@ -205,7 +219,7 @@ fun SummaryItem(
                 Text(
                     fontSize = 24.sp,
                     text = text[2],
-                    fontFamily = chonkyFont(),
+                    fontFamily = chonkyFont(animation.value),
                     color = tint,
                 )
                 Icon(
@@ -511,16 +525,20 @@ fun getHourFromMillis(millis: Long): Int {
     return LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()).hour
 }
 
-fun classyFont(): FontFamily = customFont(R.font.mendl_serif)
-fun chonkyFont(): FontFamily = customFont(R.font.jaro)
-
-@OptIn(ExperimentalTextApi::class)
-fun customFont(id: Int): FontFamily {
-    return FontFamily(
+fun classyFont(): FontFamily =
+    FontFamily(
         Font(
-            id,
+            R.font.mendl_serif
         ),
     )
-}
-
+@OptIn(ExperimentalTextApi::class)
+fun chonkyFont(opticalSize: Float = 0f): FontFamily =
+    FontFamily(
+        Font(
+            R.font.jaro,
+            variationSettings = FontVariation.Settings(
+                FontVariation.Setting("opsz", 16f + opticalSize)
+            )
+        ),
+    )
 

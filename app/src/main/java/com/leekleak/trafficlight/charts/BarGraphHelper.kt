@@ -1,6 +1,7 @@
 package com.leekleak.trafficlight.charts
 
 import android.graphics.Paint
+import androidx.compose.animation.core.Animatable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -39,7 +40,7 @@ internal data class BarGraphMetrics(
     val cellularIconOffset: Offset,
 )
 
-internal data class Bar (
+data class Bar (
     val rect: Rect,
     val type: NetworkType
 )
@@ -230,13 +231,16 @@ internal class BarGraphHelper(
             )
         }
     }
-    internal fun drawBars(cornerRadius: CornerRadius, color1: Color, color2: Color) {
+    internal fun drawBars(cornerRadius: CornerRadius, color1: Color, color2: Color, widths: List<Animatable<Float, *>>) {
         scope.run {
-            metrics.rectList.forEach { bar ->
+            metrics.rectList.forEachIndexed { i, bar ->
                 val path = Path().apply {
                     addRoundRect(
                         RoundRect(
-                            rect = bar.rect,
+                            rect = bar.rect.copy(
+                                left = bar.rect.left + widths[i].value,
+                                right = bar.rect.right - widths[i].value,
+                            ),
                             cornerRadius = cornerRadius
                         )
                     )

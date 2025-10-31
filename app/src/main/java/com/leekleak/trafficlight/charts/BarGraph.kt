@@ -11,6 +11,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -21,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.leekleak.trafficlight.charts.model.BarData
 import com.leekleak.trafficlight.util.px
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 
@@ -45,8 +47,9 @@ private fun BarGraphImpl(
 ) {
     val scope = rememberCoroutineScope()
     val vibrator = LocalContext.current.getSystemService(Vibrator::class.java)
-    val vibrationEffectStrong = VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE)
-    val vibrationEffectWeak = VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE)
+    val vibrationEffectStrong = VibrationEffect.createOneShot(80, 200)
+    val vibrationEffectMedium = VibrationEffect.createOneShot(40, 100)
+    val vibrationEffectWeak = VibrationEffect.createOneShot(40,50)
 
     val primaryColor = GraphTheme.primaryColor
     val secondaryColor = GraphTheme.secondaryColor
@@ -59,6 +62,7 @@ private fun BarGraphImpl(
     val shapeCellular = GraphTheme.cellularShape()
     val iconWifi = GraphTheme.wifiIcon()
     val iconCellular = GraphTheme.cellularIcon()
+    val legendSize = 32.dp.px
 
     val wifiLegendStrength = remember { mutableIntStateOf(5) }
     val cellularLegendStrength = remember { mutableIntStateOf(5) }
@@ -74,48 +78,59 @@ private fun BarGraphImpl(
 
     val wifiAnimation = remember { Animatable(0f) }
     val cellularAnimation = remember { Animatable(0f) }
+    val barAnimation = remember { List(yAxisData.size * 2) {Animatable(0f)} }
 
     var wifiOffset: Offset = Offset.Zero
     var cellularOffset: Offset = Offset.Zero
+    var barOffset = remember { listOf<Bar>() }
+
+    suspend fun legendAnimator(clickOffset: Offset, legendOffset: Offset, animation: Animatable<Float, *>, legendStrength: MutableIntState) {
+        if (
+            (clickOffset - legendOffset).x in (0f..legendSize) &&
+            (clickOffset - legendOffset).y in (0f..legendSize) &&
+            legendStrength.intValue != 0
+        ) {
+            legendStrength.intValue -= 1
+            vibrator.vibrate(
+                if (legendStrength.intValue == 0) vibrationEffectStrong
+                else vibrationEffectMedium
+            )
+            animation.animateTo(
+                targetValue = if (animation.targetValue == 15f) 0f else 15f,
+                animationSpec = tween(150)
+            )
+        }
+    }
+
+    fun CoroutineScope.barAnimator(clickOffset: Offset, bar: Bar, animation: Animatable<Float, *>) {
+        if (
+            (clickOffset - bar.rect.topLeft).x in (0f..bar.rect.size.width) &&
+            (clickOffset - bar.rect.topLeft).y in (0f..bar.rect.size.height)
+        ) {
+            vibrator.vibrate(vibrationEffectWeak)
+            launch {
+                animation.animateTo(
+                    targetValue = 8f,
+                    animationSpec = tween(150)
+                )
+                animation.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(150)
+                )
+            }
+        }
+    }
+
     Canvas(
         modifier = modifier
             .fillMaxWidth()
             .pointerInput(true) {
                 detectTapGestures { offset ->
                     scope.launch {
-                        if (
-                            (offset - wifiOffset).x in (0f..32.dp.toPx()) &&
-                            (offset - wifiOffset).y in (0f..32.dp.toPx()) &&
-                            wifiLegendStrength.intValue != 0
-                        ) {
-                            wifiAnimation.animateTo(
-                                targetValue = if (wifiAnimation.targetValue == 15f) 0f else 15f,
-                                animationSpec = tween(150)
-                            )
-                            wifiLegendStrength.intValue -= 1
-                            if (wifiLegendStrength.intValue == 0) {
-                                vibrator.vibrate(vibrationEffectStrong)
-                            }
-                            else {
-                                vibrator.vibrate(vibrationEffectWeak)
-                            }
-                        }
-                        if (
-                            (offset - cellularOffset).x in (0f..32.dp.toPx()) &&
-                            (offset - cellularOffset).y in (0f..32.dp.toPx()) &&
-                            cellularLegendStrength.intValue != 0
-                        ) {
-                            cellularAnimation.animateTo(
-                                targetValue = if (cellularAnimation.targetValue == 15f) 0f else 15f,
-                                animationSpec = tween(150)
-                            )
-                            cellularLegendStrength.intValue -= 1
-                            if (cellularLegendStrength.intValue == 0) {
-                                vibrator.vibrate(vibrationEffectStrong)
-                            }
-                            else {
-                                vibrator.vibrate(vibrationEffectWeak)
-                            }
+                        legendAnimator(offset, wifiOffset, wifiAnimation, wifiLegendStrength)
+                        legendAnimator(offset, cellularOffset, cellularAnimation, cellularLegendStrength)
+                        for (i in 0..<barOffset.size) {
+                            barAnimator(offset, barOffset[i], barAnimation[i])
                         }
                     }
                 }
@@ -127,6 +142,8 @@ private fun BarGraphImpl(
             xAxisData = xAxisData
         )
 
+        barOffset = barGraphHelper.metrics.rectList
+        barGraphHelper.metrics.rectList
         wifiOffset = barGraphHelper.metrics.wifiIconOffset
         cellularOffset = barGraphHelper.metrics.cellularIconOffset
 
@@ -155,8 +172,7 @@ private fun BarGraphImpl(
         )
 
         barGraphHelper.drawTextLabelsOverXAndYAxis(gridColor)
-        barGraphHelper.drawBars(cornerRadius, primaryColor, secondaryColor)
+        barGraphHelper.drawBars(cornerRadius, primaryColor, secondaryColor, barAnimation)
     }
-
 }
 

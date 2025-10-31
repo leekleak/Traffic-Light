@@ -118,14 +118,18 @@ class UsageService : Service(), KoinComponent {
                 )
             notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager?
             updateNotification(null)
-            ServiceCompat.startForeground(
-                this,
-                NOTIFICATION_ID,
-                notification!!,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
-            )
-        }
 
+            try {
+                ServiceCompat.startForeground(
+                    this,
+                    NOTIFICATION_ID,
+                    notification!!,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
+                )
+            } catch (e: Exception) {
+                Log.e("Traffic Light", "Failed to start foreground service")
+            }
+        }
         return START_STICKY
     }
 

@@ -99,7 +99,7 @@ data class TrafficSnapshot (
         currentDown = TrafficStats.getTotalRxBytes()
         currentUp = TrafficStats.getTotalTxBytes()
         currentMobile = TrafficStats.getMobileRxBytes() + TrafficStats.getMobileTxBytes()
-        currentWifi = TrafficStats.getTotalRxBytes() + TrafficStats.getTotalTxBytes() - currentMobile
+        currentWifi = currentUp + currentDown - currentMobile
 
         // When switching networks the api sometimes fucks up the values as per
         // https://issuetracker.google.com/issues/37009612
@@ -109,7 +109,8 @@ data class TrafficSnapshot (
         // I think ignoring data until it fixes itself up is fine
 
         if (currentDown < lastDown || currentUp < lastUp || currentMobile < lastMobile || currentWifi < lastWifi) {
-            setLastAsCurrent()
+            //setLastAsCurrent() I think this causes metering to fail when you turn on vpn
+            setCurrentAsLast()
         }
     }
 

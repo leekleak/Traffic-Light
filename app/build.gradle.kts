@@ -30,6 +30,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
             )
         }
+        debug {
+            applicationIdSuffix = ".debug"
+        }
     }
     androidResources {
         generateLocaleConfig = true
@@ -48,6 +51,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

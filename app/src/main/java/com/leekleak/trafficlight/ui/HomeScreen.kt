@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -68,6 +69,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.leekleak.trafficlight.BuildConfig
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.charts.BarGraph
 import com.leekleak.trafficlight.charts.LineGraph
@@ -93,7 +95,9 @@ fun App() {
 
     val viewModel = HomeScreenVM()
 
-    //viewModel.pop()
+    if (BuildConfig.DEBUG) {
+        viewModel.pop() // Populate the database with some mock data
+    }
 
     val notifPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS).status
@@ -161,8 +165,7 @@ fun PermissionCard(
 }
 
 @Composable
-fun SummaryItem(
-    modifier: Modifier,
+fun RowScope.SummaryItem(
     painter: Painter,
     tint: Color,
     data: () -> Long
@@ -171,13 +174,17 @@ fun SummaryItem(
     val animation = remember { Animatable(0f) }
     val haptic = LocalHapticFeedback.current
     Row (
-        modifier = modifier
+        modifier = Modifier
+            .weight(1f + animation.value/256f)
             .clip(MaterialTheme.shapes.large)
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .clickable {
                 scope.launch {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    animation.animateTo(64f)
+                    animation.animateTo(
+                        64f,
+                        spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessMedium)
+                    )
                     animation.animateTo(0f)
                 }
             },
@@ -286,13 +293,11 @@ fun LazyListScope.TodayOverview(viewModel: HomeScreenVM) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
             ) {
                 SummaryItem(
-                    modifier = Modifier.weight(1f),
                     painter = painterResource(R.drawable.wifi),
                     tint = MaterialTheme.colorScheme.primary,
                     data = { usage.totalWifi() }
                 )
                 SummaryItem(
-                    modifier = Modifier.weight(1f),
                     painter = painterResource(R.drawable.cellular),
                     tint = MaterialTheme.colorScheme.tertiary,
                     data = { usage.totalCellular() }

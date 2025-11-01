@@ -126,7 +126,7 @@ class UsageService : Service(), KoinComponent {
                     notification!!,
                     ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
                 )
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 Log.e("Traffic Light", "Failed to start foreground service")
             }
         }
@@ -220,7 +220,7 @@ class UsageService : Service(), KoinComponent {
         val canvas = NativeCanvas(bitmap)
 
         val text = smartFormat(snapshot.totalSpeed, true)
-        val speed = text.substring(0, text.indexOfFirst { it.isLetter() })
+        val speed = text.take(text.indexOfFirst { it.isLetter() })
         val unit = text.substring(text.indexOfFirst { it.isLetter() })
 
         val paint = Paint().apply {

@@ -14,6 +14,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,7 +46,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,6 +53,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -79,7 +80,6 @@ import com.leekleak.trafficlight.util.DataSize
 import com.leekleak.trafficlight.util.SizeFormatter
 import com.leekleak.trafficlight.util.padHour
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -170,7 +170,6 @@ fun RowScope.SummaryItem(
     tint: Color,
     data: () -> Long
 ) {
-    val scope = rememberCoroutineScope()
     val animation = remember { Animatable(0f) }
     val haptic = LocalHapticFeedback.current
     Row (
@@ -178,33 +177,27 @@ fun RowScope.SummaryItem(
             .weight(1f + animation.value/256f)
             .clip(MaterialTheme.shapes.large)
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .clickable {
-                scope.launch {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    animation.animateTo(
-                        64f,
-                        spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessMedium)
-                    )
-                    animation.animateTo(0f)
-                }
+            .pointerInput(Unit) {
+                detectTapGestures (
+                    onPress = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        animation.animateTo(
+                            64f,
+                            spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessMedium)
+                        )
+                        tryAwaitRelease()
+                        animation.animateTo(0f)
+                    },
+                )
             },
         horizontalArrangement = Arrangement.Center,
     ) {
         val text = DataSize(value = data().toFloat(), precision = 2).toStringParts()
 
-        // When there's a number like 400, it takes up much more space than eg. 111 and it looks cramped
-        val bigLetterCount = text.count {"04689".contains(it)}
-        val spacing = when (bigLetterCount) {
-            3 -> ((-2).sp)
-            2 -> ((-1).sp)
-            else -> 0.sp
-        }
-
         Text(
             fontSize = 76.sp,
             text = text[0],
             fontFamily = chonkyFont(animation.value),
-            letterSpacing = spacing,
             color = tint
         )
         Column (
@@ -542,7 +535,7 @@ fun chonkyFont(opticalSize: Float = 0f): FontFamily =
         Font(
             R.font.jaro,
             variationSettings = FontVariation.Settings(
-                FontVariation.Setting("opsz", 16f + opticalSize)
+                FontVariation.Setting("opsz", 80f - opticalSize)
             )
         ),
     )

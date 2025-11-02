@@ -105,15 +105,18 @@ fun App() {
         PermissionStatus.Granted
     }
 
+    val batteryOptimizationDisabled = remember { mutableStateOf(viewModel.batteryOptimizationDisabled(context)) }
+
     LaunchedEffect(null) {
         while (true) {
             viewModel.runService(activity)
-            delay(5000L)
+            batteryOptimizationDisabled.value = viewModel.batteryOptimizationDisabled(context)
+            delay(1000L)
         }
     }
 
     Scaffold {
-        if (notifPermission.isGranted) {
+        if (notifPermission.isGranted && batteryOptimizationDisabled.value) {
             Dashboard(viewModel)
         } else {
             Column (
@@ -130,7 +133,7 @@ fun App() {
                     text = stringResource(R.string.permissions)
                 )
                 PermissionCard(
-                    title = stringResource(R.string.notification_permission_required),
+                    title = stringResource(R.string.notification_permission),
                     description = stringResource(R.string.notification_permission_description),
                     enabled = !notifPermission.isGranted,
                     onClick = {
@@ -138,6 +141,14 @@ fun App() {
                             putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
                         }
                         context.startActivity(intent)
+                    }
+                )
+                PermissionCard(
+                    title = stringResource(R.string.battery_optimization),
+                    description = stringResource(R.string.battery_optimization_warning),
+                    enabled = !batteryOptimizationDisabled.value,
+                    onClick = {
+                        viewModel.disableBatteryOptimization(context = context)
                     }
                 )
             }
@@ -174,11 +185,11 @@ fun RowScope.SummaryItem(
     val haptic = LocalHapticFeedback.current
     Row (
         modifier = Modifier
-            .weight(1f + animation.value/256f)
+            .weight(1f + animation.value / 256f)
             .clip(MaterialTheme.shapes.large)
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .pointerInput(Unit) {
-                detectTapGestures (
+                detectTapGestures(
                     onPress = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         animation.animateTo(

@@ -116,12 +116,7 @@ data class TrafficSnapshot (
     }
 
     fun equals(other: TrafficSnapshot?): Boolean {
-        return other?.let {
-            currentDown == other.currentDown &&
-            currentUp == other.currentUp &&
-            currentMobile == other.currentMobile &&
-            currentWifi == other.currentWifi
-        } ?: false
+        return other?.let { totalSpeed == it.totalSpeed } ?: false
     }
 
     object Converters {

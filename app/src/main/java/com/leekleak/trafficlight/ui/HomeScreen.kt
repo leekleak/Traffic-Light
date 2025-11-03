@@ -1,9 +1,7 @@
 package com.leekleak.trafficlight.ui
 
 import android.Manifest
-import android.content.Intent
 import android.os.Build
-import android.provider.Settings
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -115,13 +113,13 @@ fun App() {
         }
     }
 
-    Scaffold {
+    Scaffold { paddingValues ->
         if (notifPermission.isGranted && batteryOptimizationDisabled.value) {
             Dashboard(viewModel)
         } else {
             Column (
                 modifier = Modifier
-                    .padding(it)
+                    .padding(paddingValues)
                     .padding(16.dp)
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Bottom)
@@ -136,20 +134,13 @@ fun App() {
                     title = stringResource(R.string.notification_permission),
                     description = stringResource(R.string.notification_permission_description),
                     enabled = !notifPermission.isGranted,
-                    onClick = {
-                        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-                            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-                        }
-                        context.startActivity(intent)
-                    }
+                    onClick = { activity?.let { viewModel.allowNotifications(it) } }
                 )
                 PermissionCard(
                     title = stringResource(R.string.battery_optimization),
                     description = stringResource(R.string.battery_optimization_warning),
                     enabled = !batteryOptimizationDisabled.value,
-                    onClick = {
-                        viewModel.disableBatteryOptimization(context = context)
-                    }
+                    onClick = { activity?.let { viewModel.disableBatteryOptimization(it) } }
                 )
             }
         }

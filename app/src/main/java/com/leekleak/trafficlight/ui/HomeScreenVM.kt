@@ -51,12 +51,18 @@ class HomeScreenVM() : ViewModel(), KoinComponent {
         return pm.isIgnoringBatteryOptimizations(packageName)
     }
 
-    fun disableBatteryOptimization(context: Context) {
-        val intent = Intent()
-        val packageName: String? = context.packageName
-        intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-        intent.data = ("package:$packageName").toUri()
-        context.startActivity(intent)
+    fun disableBatteryOptimization(activity: Activity) {
+        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+            data = ("package:${activity.packageName}").toUri()
+        }
+        activity.startActivity(intent)
+    }
+
+    fun allowNotifications(activity: Activity) {
+        activity.requestPermissions(
+            arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+            1
+        )
     }
 
     fun pop() {

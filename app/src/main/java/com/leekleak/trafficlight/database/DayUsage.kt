@@ -115,8 +115,11 @@ data class TrafficSnapshot (
         )
     }
 
-    fun equals(other: TrafficSnapshot?): Boolean {
-        return other?.let { totalSpeed == it.totalSpeed } ?: false
+    fun closeEnough(other: TrafficSnapshot?): Boolean {
+        return other?.let {
+            totalSpeed == it.totalSpeed ||
+            (totalSpeed  in 1..1023 && it.totalSpeed in 1..1023)
+        } ?: false
     }
 
     object Converters {

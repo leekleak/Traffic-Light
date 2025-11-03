@@ -4,8 +4,10 @@ import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.graphics.Paint
 import android.os.IBinder
@@ -59,7 +61,7 @@ class UsageService : Service(), KoinComponent {
         return null
     }
     private var screenOn: Boolean = true
-    /*private val screenStateReceiver = object : BroadcastReceiver() {
+    private val screenStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 Intent.ACTION_SCREEN_ON -> {
@@ -70,15 +72,15 @@ class UsageService : Service(), KoinComponent {
                 }
             }
         }
-    }*/
+    }
 
     override fun onCreate() {
         super.onCreate()
         instance = this
-        /*registerReceiver(screenStateReceiver, IntentFilter().apply {
+        registerReceiver(screenStateReceiver, IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_SCREEN_OFF)
-        })*/
+        })
     }
 
     override fun onDestroy() {
@@ -174,15 +176,7 @@ class UsageService : Service(), KoinComponent {
 
     var lastSnapshot: TrafficSnapshot = TrafficSnapshot()
     private fun updateNotification(trafficSnapshot: TrafficSnapshot?) {
-        if (
-            trafficSnapshot != null &&
-            smartFormat(lastSnapshot.totalSpeed, true) ==
-            smartFormat(trafficSnapshot.totalSpeed, true) &&
-            smartFormat(lastSnapshot.downSpeed, true) ==
-            smartFormat(trafficSnapshot.downSpeed, true) &&
-            smartFormat(lastSnapshot.upSpeed, true) ==
-            smartFormat(trafficSnapshot.upSpeed, true)
-        ) {
+        if (lastSnapshot.equals(trafficSnapshot)) {
             Log.i("UsageService", "Skipped notification update")
             return
         }

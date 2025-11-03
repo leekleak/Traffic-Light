@@ -87,13 +87,6 @@ data class TrafficSnapshot (
         lastWifi = currentWifi
     }
 
-    private fun setLastAsCurrent() {
-        currentDown = lastDown
-        currentUp = lastUp
-        currentMobile = lastMobile
-        currentWifi = lastWifi
-    }
-
     fun updateSnapshot() {
         setCurrentAsLast()
         currentDown = TrafficStats.getTotalRxBytes()
@@ -109,7 +102,6 @@ data class TrafficSnapshot (
         // I think ignoring data until it fixes itself up is fine
 
         if (currentDown < lastDown || currentUp < lastUp || currentMobile < lastMobile || currentWifi < lastWifi) {
-            //setLastAsCurrent() I think this causes metering to fail when you turn on vpn
             setCurrentAsLast()
         }
     }

@@ -82,7 +82,7 @@ private fun BarGraphImpl(
 
     var wifiOffset: Offset = Offset.Zero
     var cellularOffset: Offset = Offset.Zero
-    var barOffset = remember { listOf<Bar>() }
+    val barOffset = remember { mutableListOf<Bar>() }
 
     suspend fun legendAnimator(clickOffset: Offset, legendOffset: Offset, animation: Animatable<Float, *>, legendStrength: MutableIntState) {
         if (
@@ -142,7 +142,8 @@ private fun BarGraphImpl(
             xAxisData = xAxisData
         )
 
-        barOffset = barGraphHelper.metrics.rectList
+        barOffset.clear()
+        barOffset.addAll(barGraphHelper.metrics.rectList)
         barGraphHelper.metrics.rectList
         wifiOffset = barGraphHelper.metrics.wifiIconOffset
         cellularOffset = barGraphHelper.metrics.cellularIconOffset

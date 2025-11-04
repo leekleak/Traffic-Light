@@ -3,6 +3,7 @@ package com.leekleak.trafficlight.util
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 enum class NetworkType {
     Cellular,
@@ -23,4 +24,9 @@ inline val Dp.px: Float
 fun padHour(time: Int): String {
     if (time % 6 == 0) return time.toString().padStart(2, '0')
     return ""
+}
+
+@Composable
+fun Int.toDp(): Dp {
+    return (this / LocalDensity.current.density).dp
 }

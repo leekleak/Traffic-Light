@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.time.LocalDate
+import kotlin.math.min
 
 @Entity
 data class DayUsage(
@@ -55,7 +56,8 @@ data class HourUsage(
             upload + other.upload,
             download + other.download,
             wifi + other.wifi,
-            cellular + other.cellular)
+            cellular + other.cellular
+        )
     }
 }
 
@@ -79,6 +81,12 @@ data class TrafficSnapshot (
     val upSpeed: Long
         get() = currentUp - lastUp
 
+    val mobileSpeed: Long
+        get() = currentMobile - lastMobile
+
+    val wifiSpeed: Long
+        get() = currentWifi - lastWifi
+
 
     private fun setCurrentAsLast() {
         lastDown = currentDown
@@ -101,17 +109,18 @@ data class TrafficSnapshot (
 
         // I think ignoring data until it fixes itself up is fine
 
-        if (currentDown < lastDown || currentUp < lastUp || currentMobile < lastMobile || currentWifi < lastWifi) {
-            setCurrentAsLast()
-        }
+        if (currentDown < lastDown) currentDown = lastDown
+        if (currentUp < lastUp) currentUp = lastUp
+        if (currentMobile < lastMobile) currentMobile = lastMobile
+        if (currentWifi < lastWifi) currentWifi = lastWifi
     }
 
     fun toHourUsage(): HourUsage {
         return HourUsage(
             upSpeed,
             downSpeed,
-            currentWifi - lastWifi,
-            currentMobile - lastMobile
+            wifiSpeed,
+            mobileSpeed
         )
     }
 

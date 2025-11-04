@@ -19,7 +19,7 @@ class DayUsageRepository(context: Context) {
 
     fun populateDb() {
         val seeds = listOf(Random(1), Random(2), Random(3), Random(4))
-        for (i in 0..28) {
+        for (i in 1..28) {
             val hours: MutableMap<Long, HourUsage> = mutableMapOf()
             val date = LocalDate.now().minusDays(i.toLong()).atStartOfDay()
             for (k in 0..23) {

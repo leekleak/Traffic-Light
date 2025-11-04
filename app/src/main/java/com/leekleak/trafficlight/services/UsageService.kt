@@ -34,7 +34,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent
 import org.koin.java.KoinJavaComponent.inject
 import java.time.Instant
@@ -119,7 +118,6 @@ class UsageService : Service(), KoinComponent {
                     onDismissedIntent(this)
                 )
             notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager?
-            updateNotification(null)
 
             try {
                 ServiceCompat.startForeground(
@@ -151,12 +149,12 @@ class UsageService : Service(), KoinComponent {
         }
     }
 
-    private fun updateDatabase(trafficSnapshot: TrafficSnapshot?) {
+    private suspend fun updateDatabase(trafficSnapshot: TrafficSnapshot?) {
         if (trafficSnapshot == null) return
 
         val dateTime = LocalDateTime.now()
         if (dayUsageRepo.dayUsageExists(dateTime.toLocalDate())) {
-            val usage = runBlocking { dayUsageRepo.getDayUsage(dateTime.toLocalDate()).first() }
+            val usage = dayUsageRepo.getDayUsage(dateTime.toLocalDate()).first()
             val timezone = ZoneId.systemDefault().rules.getOffset(Instant.now())
 
             usage?.let {
@@ -175,7 +173,7 @@ class UsageService : Service(), KoinComponent {
 
 
     var lastSnapshot: TrafficSnapshot = TrafficSnapshot()
-    private fun updateNotification(trafficSnapshot: TrafficSnapshot?) {
+    private suspend fun updateNotification(trafficSnapshot: TrafficSnapshot?) {
         if (lastSnapshot.closeEnough(trafficSnapshot)) {
             Log.i("UsageService", "Skipped notification update: ${trafficSnapshot?.totalSpeed}")
             return
@@ -185,7 +183,7 @@ class UsageService : Service(), KoinComponent {
 
         lastSnapshot = snapshot.copy()
 
-        val todayUsage = runBlocking { dayUsageRepo.getTodayUsage().first() }
+        val todayUsage = dayUsageRepo.getTodayUsage().first()
         val speedFormatter = SizeFormatter(true, 0)
         val sizeFormatter = SizeFormatter(false, 2)
         val title = getString(R.string.speed, speedFormatter.format(snapshot.totalSpeed))

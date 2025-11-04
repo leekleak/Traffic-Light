@@ -13,4 +13,5 @@
     <string name="speed">Speed: %1$s</string>
     <string name="battery_optimization">Battery optimization</string>
     <string name="battery_optimization_warning">Must be disabled to stop the phone killing the background service after a while.</string>
+    <string name="settings">Settings</string>
 </resources>

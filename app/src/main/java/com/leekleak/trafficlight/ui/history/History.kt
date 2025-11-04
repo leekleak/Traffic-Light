@@ -1,8 +1,5 @@
-package com.leekleak.trafficlight.ui
+package com.leekleak.trafficlight.ui.history
 
-import android.Manifest
-import android.os.Build
-import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
@@ -19,23 +16,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,7 +43,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -65,9 +55,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.PermissionStatus
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
 import com.leekleak.trafficlight.BuildConfig
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.charts.BarGraph
@@ -87,83 +74,16 @@ import java.util.Locale
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun App() {
-    val context = LocalContext.current
-    val activity = LocalActivity.current
-
-    val viewModel = HomeScreenVM()
+fun History(
+    paddingValues: PaddingValues
+) {
+    val viewModel = HistoryVM()
 
     if (BuildConfig.DEBUG) {
         viewModel.pop() // Populate the database with some mock data
     }
 
-    val notifPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS).status
-    } else {
-        PermissionStatus.Granted
-    }
-
-    val batteryOptimizationDisabled = remember { mutableStateOf(viewModel.batteryOptimizationDisabled(context)) }
-
-    LaunchedEffect(null) {
-        while (true) {
-            viewModel.runService(activity)
-            batteryOptimizationDisabled.value = viewModel.batteryOptimizationDisabled(context)
-            delay(1000L)
-        }
-    }
-
-    Scaffold { paddingValues ->
-        if (notifPermission.isGranted && batteryOptimizationDisabled.value) {
-            Dashboard(viewModel)
-        } else {
-            Column (
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .padding(16.dp)
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Bottom)
-            ) {
-                Text(
-                    modifier = Modifier.padding(8.dp),
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    text = stringResource(R.string.permissions)
-                )
-                PermissionCard(
-                    title = stringResource(R.string.notification_permission),
-                    description = stringResource(R.string.notification_permission_description),
-                    enabled = !notifPermission.isGranted,
-                    onClick = { activity?.let { viewModel.allowNotifications(it) } }
-                )
-                PermissionCard(
-                    title = stringResource(R.string.battery_optimization),
-                    description = stringResource(R.string.battery_optimization_warning),
-                    enabled = !batteryOptimizationDisabled.value,
-                    onClick = { activity?.let { viewModel.disableBatteryOptimization(it) } }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun PermissionCard(
-    title: String,
-    description: String,
-    enabled: Boolean,
-    onClick: () -> Unit
-) {
-    Column (modifier = Modifier
-        .clip(MaterialTheme.shapes.large)
-        .background(MaterialTheme.colorScheme.surfaceContainer)
-        .padding(16.dp),
-        horizontalAlignment = Alignment.End
-    ) {
-        Text(modifier = Modifier.fillMaxWidth(), fontWeight = FontWeight.Bold, text = title)
-        Text(modifier = Modifier.fillMaxWidth(), text = description)
-        Button(enabled = enabled, onClick = onClick) { Text(stringResource(R.string.grant)) }
-    }
+    Dashboard(viewModel, paddingValues)
 }
 
 @Composable
@@ -235,10 +155,10 @@ fun RowScope.SummaryItem(
 }
 
 @Composable
-fun Dashboard(viewModel: HomeScreenVM) {
+fun Dashboard(viewModel: HistoryVM, paddingValues: PaddingValues) {
     val haptic = LocalHapticFeedback.current
     var currentDate by remember { mutableStateOf(LocalDate.now()) }
-    val usageHistory by viewModel.usageHistory(currentDate).collectAsState(listOf())
+    val usageHistory by viewModel.usageHistory(currentDate).collectAsState(null)
     var selected by remember { mutableIntStateOf(-1) }
 
     LaunchedEffect(Unit) {
@@ -251,16 +171,10 @@ fun Dashboard(viewModel: HomeScreenVM) {
     }
 
     LazyColumn(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.background(MaterialTheme.colorScheme.surface).fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(
-            start = 16.dp,
-            end = 16.dp,
-            top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 8.dp,
-            bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 8.dp
-        )
+        contentPadding = paddingValues
     ) {
-        TodayOverview(viewModel)
         HistoryOverview(usageHistory, selected, onClick = { i: Int ->
             selected = i
             haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
@@ -268,78 +182,28 @@ fun Dashboard(viewModel: HomeScreenVM) {
     }
 }
 
-fun LazyListScope.TodayOverview(viewModel: HomeScreenVM) {
+fun LazyListScope.HistoryOverview(usageHistory: List<DayUsage?>?, selected: Int, onClick: (i: Int) -> Unit) {
     item {
         Text(
-            modifier = Modifier
-                .padding(start = 8.dp, bottom = 8.dp),
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            text = stringResource(R.string.today)
-        )
-    }
-    item {
-        val usage by viewModel.todayUsage.collectAsState(DayUsage())
-
-        val data = dayUsageToBarData(usage)
-        Column (verticalArrangement = Arrangement.spacedBy(8.dp)){
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-            ) {
-                SummaryItem(
-                    painter = painterResource(R.drawable.wifi),
-                    tint = MaterialTheme.colorScheme.primary,
-                    data = { usage.totalWifi() }
-                )
-                SummaryItem(
-                    painter = painterResource(R.drawable.cellular),
-                    tint = MaterialTheme.colorScheme.tertiary,
-                    data = { usage.totalCellular() }
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .clip(MaterialTheme.shapes.large)
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
-                    .padding(6.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .clip(MaterialTheme.shapes.medium)
-                        .background(MaterialTheme.colorScheme.background)
-                ) {
-                    BarGraph(
-                        modifier = Modifier
-                            .padding(top = 24.dp, start = 24.dp, bottom = 16.dp)
-                            .height(150.dp),
-                        data = data
-                    )
-                }
-            }
-        }
-    }
-}
-
-fun LazyListScope.HistoryOverview(usageHistory: List<DayUsage?>, selected: Int, onClick: (i: Int) -> Unit) {
-    item {
-        Text(
-            modifier = Modifier.padding(8.dp),
+            modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             text = stringResource(R.string.history)
         )
     }
-    if (usageHistory.count { it != null } == 0) {
-        item {
-            HistoryPlaceholder()
+    if (usageHistory != null) {
+        if (usageHistory.isEmpty()) {
+            item {
+                HistoryPlaceholder()
+            }
         }
-    } else {
-        val maximum = usageHistory.maxOf { day -> day?.hours?.entries?.sumOf { it.value.total } ?: 0 }
-        usageHistory.forEachIndexed { i, it ->
-            if (it != null) {
-                item {
-                    HistoryItem(maximum, it, i, selected, onClick)
+        else {
+            val maximum = usageHistory.maxOf { day -> day?.hours?.entries?.sumOf { it.value.total } ?: 0 }
+            usageHistory.forEachIndexed { i, it ->
+                if (it != null) {
+                    item {
+                        HistoryItem(maximum, it, i, selected, onClick)
+                    }
                 }
             }
         }

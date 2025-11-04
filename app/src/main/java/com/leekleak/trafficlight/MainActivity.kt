@@ -6,12 +6,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import com.leekleak.trafficlight.model.AppTheme
 import com.leekleak.trafficlight.services.UsageService.Companion.NOTIFICATION_CHANNEL_ID
-import com.leekleak.trafficlight.ui.App
+import com.leekleak.trafficlight.ui.navigation.NavigationManager
 
 class MainActivity : ComponentActivity() {
 
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -20,7 +22,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             AppTheme {
-                App()
+                NavigationManager()
             }
         }
     }

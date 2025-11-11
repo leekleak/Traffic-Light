@@ -16,8 +16,8 @@ android {
         applicationId = "com.leekleak.trafficlight"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.1.0"
         base.archivesName = "$namespace-$versionName"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

@@ -1,4 +1,4 @@
-package com.leekleak.trafficlight.ui.navigation
+package com.leekleak.trafficlight.ui.app
 
 import android.app.Activity
 import android.content.Context
@@ -6,9 +6,8 @@ import android.content.Context.POWER_SERVICE
 import android.os.PowerManager
 import androidx.lifecycle.ViewModel
 import com.leekleak.trafficlight.services.UsageService
-import org.koin.core.component.KoinComponent
 
-class NavigationVM : ViewModel(), KoinComponent {
+class AppVM : ViewModel() {
     fun runService(activity: Activity?) {
         activity?.let {
             UsageService.startService(it)

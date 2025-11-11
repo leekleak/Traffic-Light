@@ -9,7 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import com.leekleak.trafficlight.model.AppTheme
 import com.leekleak.trafficlight.services.UsageService.Companion.NOTIFICATION_CHANNEL_ID
-import com.leekleak.trafficlight.ui.navigation.NavigationManager
+import com.leekleak.trafficlight.ui.app.App
 
 class MainActivity : ComponentActivity() {
 
@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             AppTheme {
-                NavigationManager()
+                App()
             }
         }
     }

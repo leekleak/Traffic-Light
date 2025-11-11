@@ -9,9 +9,12 @@
     <string name="cellular">Mobilieji</string>
     <string name="fly">Musė</string>
     <string name="nothing_here">Čia dar tuščia...</string>
+    <string name="settings">Nustatymai</string>
     <string name="notification_permission">Reikia leidimo skelbti pranešimus</string>
     <string name="permissions">Leidimai</string>
     <string name="speed">Greitis: %1$s</string>
     <string name="battery_optimization">Akumuliatoriaus optimizacija</string>
-    <string name="battery_optimization_warning">Jei įjungta, sistema gali sustabdyti programėlės procesą.</string>
+    <string name="battery_optimization_description">Jei įjungta, sistema gali sustabdyti programėlės procesą.</string>
+    <string name="usage_statistics">Naudojimo Statistika</string>
+    <string name="usage_statistics_description">Reikalinga istorinių duomenų rinkimui.</string>
 </resources>

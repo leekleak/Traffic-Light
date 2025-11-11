@@ -54,7 +54,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.leekleak.trafficlight.BuildConfig
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.charts.BarGraph
@@ -72,7 +71,6 @@ import java.time.ZoneId
 import java.time.format.TextStyle
 import java.util.Locale
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun History(
     paddingValues: PaddingValues

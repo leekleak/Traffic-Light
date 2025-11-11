@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.app.usage.NetworkStatsManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -24,6 +25,7 @@ import com.leekleak.trafficlight.database.DayUsage
 import com.leekleak.trafficlight.database.DayUsageRepo
 import com.leekleak.trafficlight.database.HourUsage
 import com.leekleak.trafficlight.database.TrafficSnapshot
+import com.leekleak.trafficlight.util.NetworkType
 import com.leekleak.trafficlight.util.SizeFormatter
 import com.leekleak.trafficlight.util.SizeFormatter.Companion.smartFormat
 import com.leekleak.trafficlight.util.clipAndPad
@@ -45,8 +47,9 @@ class UsageService : Service(), KoinComponent {
     private val serviceScope = CoroutineScope(Dispatchers.IO)
     private var job: Job? = null
     private val dayUsageRepo: DayUsageRepo by inject()
-    private var notification: Notification? = null
+    private var networkStatsManager: NetworkStatsManager? = null
     private var notificationManager: NotificationManager? = null
+    private var notification: Notification? = null
     private var notificationBuilder = NotificationCompat.Builder(this, "N")
         .setSmallIcon(R.mipmap.ic_launcher)
         .setContentTitle("Traffic Light")
@@ -55,10 +58,6 @@ class UsageService : Service(), KoinComponent {
         .setSilent(true)
         .setWhen(Long.MAX_VALUE) // Keep above other notifications
         .setShowWhen(false) // Hide timestamp
-
-    override fun onBind(intent: Intent): IBinder? {
-        return null
-    }
     private var screenOn: Boolean = true
     private val screenStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -71,6 +70,10 @@ class UsageService : Service(), KoinComponent {
                 }
             }
         }
+    }
+
+    override fun onBind(intent: Intent): IBinder? {
+        return null
     }
 
     override fun onCreate() {
@@ -118,6 +121,7 @@ class UsageService : Service(), KoinComponent {
                     onDismissedIntent(this)
                 )
             notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager?
+            networkStatsManager = getSystemService(NETWORK_STATS_SERVICE) as NetworkStatsManager?
 
             try {
                 ServiceCompat.startForeground(
@@ -141,7 +145,7 @@ class UsageService : Service(), KoinComponent {
             while (true) {
                 trafficSnapshot.updateSnapshot()
                 if (screenOn) launch { updateNotification(trafficSnapshot) }
-                launch { updateDatabase(trafficSnapshot) }
+                launch { updateDatabase() }
 
                 nextTick += 1_000_000_000L
                 delay((nextTick - System.nanoTime()) / 1_000_000)
@@ -149,9 +153,7 @@ class UsageService : Service(), KoinComponent {
         }
     }
 
-    private suspend fun updateDatabase(trafficSnapshot: TrafficSnapshot?) {
-        if (trafficSnapshot == null) return
-
+    private suspend fun updateDatabase() {
         val dateTime = LocalDateTime.now()
         if (dayUsageRepo.dayUsageExists(dateTime.toLocalDate())) {
             val usage = dayUsageRepo.getDayUsage(dateTime.toLocalDate()).first()
@@ -159,10 +161,9 @@ class UsageService : Service(), KoinComponent {
 
             usage?.let {
                 val stamp = dateTime.truncatedTo(ChronoUnit.HOURS).toInstant(timezone).toEpochMilli()
+                val stampNow = dateTime.toInstant(timezone).toEpochMilli()
 
-                it.hours[stamp] = it.hours.getOrPut(stamp) {
-                    HourUsage()
-                }.plus(trafficSnapshot.toHourUsage())
+                it.hours[stamp] = getCurrentHourUsage(stamp, stampNow)
 
                 dayUsageRepo.updateDayUsage(it)
             }
@@ -230,6 +231,26 @@ class UsageService : Service(), KoinComponent {
         canvas.drawText(unit, 48f, 96f, paint)
 
         return IconCompat.createWithBitmap(bitmap)
+    }
+
+    fun getCurrentHourUsage(startTime: Long, endTime: Long): HourUsage {
+        val statsWifi = networkStatsManager?.querySummaryForDevice(NetworkType.Wifi.ordinal, null, startTime, endTime)
+        val statsMobile = networkStatsManager?.querySummaryForDevice(NetworkType.Cellular.ordinal, null, startTime, endTime)
+        val hourUsage = HourUsage()
+
+        statsMobile?.let {
+            hourUsage.cellular += it.txBytes + it.rxBytes
+            hourUsage.upload += it.txBytes
+            hourUsage.download += it.rxBytes
+        }
+
+        statsWifi?.let {
+            hourUsage.wifi += it.txBytes + it.rxBytes
+            hourUsage.upload += it.txBytes
+            hourUsage.download += it.rxBytes
+        }
+
+        return hourUsage
     }
 
     companion object {

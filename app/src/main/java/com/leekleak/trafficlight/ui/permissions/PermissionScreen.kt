@@ -25,16 +25,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.PermissionStatus
-import com.google.accompanist.permissions.isGranted
 import com.leekleak.trafficlight.R
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Permissions(
-    notifPermission: PermissionStatus,
-    batteryOptimizationState: Boolean,
+    notifPermission: Boolean,
+    backgroundPermission: Boolean,
+    usagePermission: Boolean
 ) {
     val activity = LocalActivity.current
     val viewModel = PermissionVM()
@@ -52,7 +49,9 @@ fun Permissions(
 
     Scaffold {
         LazyColumn(
-            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface),
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Bottom),
             contentPadding = paddingValues
         ) {
@@ -68,16 +67,24 @@ fun Permissions(
                 PermissionCard(
                     title = stringResource(R.string.notification_permission),
                     description = stringResource(R.string.notification_permission_description),
-                    enabled = !notifPermission.isGranted,
+                    enabled = !notifPermission,
                     onClick = { activity?.let { viewModel.allowNotifications(it) } }
                 )
             }
             item {
                 PermissionCard(
                     title = stringResource(R.string.battery_optimization),
-                    description = stringResource(R.string.battery_optimization_warning),
-                    enabled = batteryOptimizationState,
-                    onClick = { activity?.let { viewModel.disableBatteryOptimization(it) } }
+                    description = stringResource(R.string.battery_optimization_description),
+                    enabled = !backgroundPermission,
+                    onClick = { activity?.let { viewModel.allowBackground(it) } }
+                )
+            }
+            item {
+                PermissionCard(
+                    title = stringResource(R.string.usage_statistics),
+                    description = stringResource(R.string.usage_statistics_description),
+                    enabled = !usagePermission,
+                    onClick = { activity?.let { viewModel.allowUsage(it) } }
                 )
             }
         }

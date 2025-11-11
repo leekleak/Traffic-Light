@@ -1,6 +1,8 @@
 package com.leekleak.trafficlight.database
 
+import android.net.ConnectivityManager
 import android.net.TrafficStats
+import android.util.Log
 import androidx.room.Dao
 import androidx.room.Entity
 import androidx.room.Insert
@@ -86,12 +88,18 @@ data class TrafficSnapshot (
     val wifiSpeed: Long
         get() = currentWifi - lastWifi
 
-
     private fun setCurrentAsLast() {
         lastDown = currentDown
         lastUp = currentUp
         lastMobile = currentMobile
         lastWifi = currentWifi
+    }
+
+    private fun setLastAsCurrent() {
+        currentDown = lastDown
+        currentUp = lastUp
+        currentMobile = lastMobile
+        currentWifi = lastWifi
     }
 
     fun updateSnapshot() {
@@ -108,10 +116,9 @@ data class TrafficSnapshot (
 
         // I think ignoring data until it fixes itself up is fine
 
-        if (currentDown < lastDown) currentDown = lastDown
-        if (currentUp < lastUp) currentUp = lastUp
-        if (currentMobile < lastMobile) currentMobile = lastMobile
-        if (currentWifi < lastWifi) currentWifi = lastWifi
+        if (currentMobile < lastMobile || currentWifi < lastWifi) {
+            setCurrentAsLast()
+        }
     }
 
     fun toHourUsage(): HourUsage {

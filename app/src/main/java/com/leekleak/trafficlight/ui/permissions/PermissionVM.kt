@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel
 import org.koin.core.component.KoinComponent
 
 class PermissionVM : ViewModel(), KoinComponent {
-    fun disableBatteryOptimization(activity: Activity) {
+    fun allowBackground(activity: Activity) {
         val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
             data = ("package:${activity.packageName}").toUri()
         }
@@ -21,5 +21,10 @@ class PermissionVM : ViewModel(), KoinComponent {
             arrayOf(Manifest.permission.POST_NOTIFICATIONS),
             1
         )
+    }
+
+    fun allowUsage(activity: Activity) {
+        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+        activity.startActivity(intent)
     }
 }

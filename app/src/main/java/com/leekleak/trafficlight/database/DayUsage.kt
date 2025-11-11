@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.time.LocalDate
-import kotlin.math.min
 
 @Entity
 data class DayUsage(

@@ -2,14 +2,10 @@ package com.leekleak.trafficlight.ui.permissions
 
 import android.Manifest
 import android.app.Activity
-import android.content.Context
-import android.content.Context.POWER_SERVICE
 import android.content.Intent
-import android.os.PowerManager
 import android.provider.Settings
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
-import com.leekleak.trafficlight.services.UsageService
 import org.koin.core.component.KoinComponent
 
 class PermissionVM : ViewModel(), KoinComponent {

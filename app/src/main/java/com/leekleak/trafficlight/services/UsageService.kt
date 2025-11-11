@@ -21,7 +21,7 @@ import androidx.core.graphics.drawable.IconCompat
 import com.leekleak.trafficlight.MainActivity
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.database.DayUsage
-import com.leekleak.trafficlight.database.DayUsageRepository
+import com.leekleak.trafficlight.database.DayUsageRepo
 import com.leekleak.trafficlight.database.HourUsage
 import com.leekleak.trafficlight.database.TrafficSnapshot
 import com.leekleak.trafficlight.util.SizeFormatter
@@ -35,7 +35,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
-import org.koin.java.KoinJavaComponent.inject
+import org.koin.core.component.inject
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -44,7 +44,7 @@ import java.time.temporal.ChronoUnit
 class UsageService : Service(), KoinComponent {
     private val serviceScope = CoroutineScope(Dispatchers.IO)
     private var job: Job? = null
-    private val dayUsageRepo: DayUsageRepository by inject(DayUsageRepository::class.java)
+    private val dayUsageRepo: DayUsageRepo by inject()
     private var notification: Notification? = null
     private var notificationManager: NotificationManager? = null
     private var notificationBuilder = NotificationCompat.Builder(this, "N")
@@ -170,7 +170,6 @@ class UsageService : Service(), KoinComponent {
             dayUsageRepo.addDayUsage(DayUsage(dateTime.toLocalDate()))
         }
     }
-
 
     var lastSnapshot: TrafficSnapshot = TrafficSnapshot()
     private suspend fun updateNotification(trafficSnapshot: TrafficSnapshot?) {

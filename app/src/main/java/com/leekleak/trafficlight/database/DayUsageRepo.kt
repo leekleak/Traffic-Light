@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import kotlin.random.Random
 
-class DayUsageRepository(context: Context) {
+class DayUsageRepo(context: Context) {
     private val dao = DayUsageDatabase.getInstance(context).dayUsageDao()
 
     fun getDayUsage(date: LocalDate): Flow<DayUsage?> = dao.getDayUsage(date)

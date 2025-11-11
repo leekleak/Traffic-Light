@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,6 +23,7 @@ import com.leekleak.trafficlight.R
 fun Settings(
     paddingValues: PaddingValues
 ) {
+    val viewModel = SettingsVM()
     LazyColumn(
         Modifier.background(MaterialTheme.colorScheme.surface),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -35,6 +37,18 @@ fun Settings(
             text = stringResource(R.string.settings)
         )
     }
+        item {
+            PreferenceCategory(title = "Notification") {
+                val modeAOD by viewModel.modeAOD.collectAsState()
+                SwitchPreference(
+                    "AOD mode",
+                    null,
+                    value = modeAOD
+                ) {
+                    viewModel.setModeAOD(it)
+                }
+            }
+        }
         for (u in 1..5) {
             item {
                 PreferenceCategory(title = "Notification") {

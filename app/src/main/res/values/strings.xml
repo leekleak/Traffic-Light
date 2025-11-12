@@ -16,4 +16,7 @@
     <string name="battery_optimization_description">Must be disabled to stop the phone killing the background service after a while.</string>
     <string name="usage_statistics">Usage Statistics</string>
     <string name="usage_statistics_description">The least buggy way to get aggregated network usage data on Android.</string>
+    <string name="notifications">Notifications</string>
+    <string name="screen_off_update">Update when screen is off</string>
+    <string name="screen_off_update_description">Allows tracking on the AOD, but impacts battery.</string>
 </resources>

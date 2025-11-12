@@ -36,11 +36,12 @@ fun Settings(
         )
     }
         item {
-            PreferenceCategory(title = "Notification") {
+            PreferenceCategory(title = stringResource(R.string.notifications)) {
                 val modeAOD by viewModel.modeAOD.collectAsState()
                 SwitchPreference(
-                    "AOD mode",
-                    null,
+                    title = stringResource(R.string.screen_off_update),
+                    summary = stringResource(R.string.screen_off_update_description),
+                    icon = null,
                     value = modeAOD
                 ) {
                     viewModel.setModeAOD(it)

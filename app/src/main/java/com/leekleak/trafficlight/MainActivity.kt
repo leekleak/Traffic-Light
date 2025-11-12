@@ -7,7 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import com.leekleak.trafficlight.model.AppTheme
+import com.leekleak.trafficlight.ui.app.AppTheme
 import com.leekleak.trafficlight.services.UsageService.Companion.NOTIFICATION_CHANNEL_ID
 import com.leekleak.trafficlight.ui.app.App
 

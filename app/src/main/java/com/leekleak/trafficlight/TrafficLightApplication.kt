@@ -2,7 +2,7 @@ package com.leekleak.trafficlight
 
 import android.app.Application
 import com.leekleak.trafficlight.database.dayUsageRepoModule
-import com.leekleak.trafficlight.ui.settings.preferenceRepoModule
+import com.leekleak.trafficlight.model.preferenceRepoModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
 

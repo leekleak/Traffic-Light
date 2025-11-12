@@ -19,12 +19,14 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.IconCompat
+import androidx.lifecycle.viewModelScope
 import com.leekleak.trafficlight.MainActivity
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.database.DayUsage
 import com.leekleak.trafficlight.database.DayUsageRepo
 import com.leekleak.trafficlight.database.HourUsage
 import com.leekleak.trafficlight.database.TrafficSnapshot
+import com.leekleak.trafficlight.model.PreferenceRepo
 import com.leekleak.trafficlight.util.NetworkType
 import com.leekleak.trafficlight.util.SizeFormatter
 import com.leekleak.trafficlight.util.SizeFormatter.Companion.smartFormat
@@ -34,7 +36,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -46,16 +50,19 @@ import java.time.temporal.ChronoUnit
 class UsageService : Service(), KoinComponent {
     private val serviceScope = CoroutineScope(Dispatchers.IO)
     private var job: Job? = null
+
     private val dayUsageRepo: DayUsageRepo by inject()
+    private val preferenceRepo: PreferenceRepo by inject()
+
     private var networkStatsManager: NetworkStatsManager? = null
     private var notificationManager: NotificationManager? = null
+
     private var notification: Notification? = null
     private var notificationBuilder = NotificationCompat.Builder(this, "N")
         .setSmallIcon(R.mipmap.ic_launcher)
         .setContentTitle("Traffic Light")
         .setChannelId(NOTIFICATION_CHANNEL_ID)
         .setOngoing(true)
-        .setSilent(true)
         .setWhen(Long.MAX_VALUE) // Keep above other notifications
         .setShowWhen(false) // Hide timestamp
     private var screenOn: Boolean = true
@@ -144,7 +151,7 @@ class UsageService : Service(), KoinComponent {
             var nextTick = System.nanoTime()
             while (true) {
                 trafficSnapshot.updateSnapshot()
-                if (screenOn) launch { updateNotification(trafficSnapshot) }
+                if (screenOn || preferenceRepo.modeAOD.first()) launch { updateNotification(trafficSnapshot) }
                 launch { updateDatabase() }
 
                 nextTick += 1_000_000_000L

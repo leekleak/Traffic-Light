@@ -1,4 +1,4 @@
-package com.leekleak.trafficlight.ui.settings
+package com.leekleak.trafficlight.model
 
 
 import android.content.Context
@@ -29,6 +29,6 @@ class PreferenceRepo (
 
     private companion object {
         val MODE_AOD = booleanPreferencesKey("mode_aod")
-        val SIZE_ICON = stringPreferencesKey("mode_icon")
+        val SIZE_ICON = stringPreferencesKey("size_icon")
     }
 }

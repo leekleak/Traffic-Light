@@ -1,4 +1,4 @@
-package com.leekleak.trafficlight.model
+package com.leekleak.trafficlight.ui.app
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

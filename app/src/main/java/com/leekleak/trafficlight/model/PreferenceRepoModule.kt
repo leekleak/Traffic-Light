@@ -1,4 +1,4 @@
-package com.leekleak.trafficlight.ui.settings
+package com.leekleak.trafficlight.model
 
 import org.koin.dsl.module
 

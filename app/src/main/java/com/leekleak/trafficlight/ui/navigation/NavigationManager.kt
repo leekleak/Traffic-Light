@@ -1,6 +1,5 @@
 package com.leekleak.trafficlight.ui.navigation
 
-import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -22,7 +21,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
@@ -40,7 +38,6 @@ import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.ui.history.History
 import com.leekleak.trafficlight.ui.overview.Overview
 import com.leekleak.trafficlight.ui.settings.Settings
-import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 
@@ -68,9 +65,6 @@ sealed interface NavKeys : NavKey {
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NavigationManager() {
-    val activity = LocalActivity.current
-    val viewModel = NavigationManagerVM()
-
     var currentTab by rememberSaveable(stateSaver = NavKeys.stateSaver) { mutableStateOf(NavKeys.Overview) }
     val overviewBackStack = rememberNavBackStack(NavKeys.Overview)
     val historyBackStack = rememberNavBackStack(NavKeys.History)
@@ -96,13 +90,6 @@ fun NavigationManager() {
             top = topPadding + 8.dp,
             bottom = bottomPadding + toolbarOffset
         )
-
-    LaunchedEffect(null) {
-        while (true) {
-            viewModel.runService(activity)
-            delay(1000L)
-        }
-    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),

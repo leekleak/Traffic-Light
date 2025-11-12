@@ -12,4 +12,6 @@ class SettingsVM : ViewModel(), KoinComponent {
     val preferenceRepo: PreferenceRepo by inject()
     val modeAOD = preferenceRepo.modeAOD.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
     fun setModeAOD(enabled: Boolean) = preferenceRepo.setModeAOD(enabled)
+    val bigIcon = preferenceRepo.bigIcon.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
+    fun setBigIcon(enabled: Boolean) = preferenceRepo.setBigIcon(enabled)
 }

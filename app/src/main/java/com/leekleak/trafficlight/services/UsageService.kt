@@ -14,12 +14,12 @@ import android.graphics.Paint
 import android.os.IBinder
 import android.util.Log
 import androidx.compose.ui.graphics.NativeCanvas
+import androidx.compose.ui.unit.Density
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.IconCompat
-import androidx.lifecycle.viewModelScope
 import com.leekleak.trafficlight.MainActivity
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.database.DayUsage
@@ -36,9 +36,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -90,6 +88,9 @@ class UsageService : Service(), KoinComponent {
             addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_SCREEN_OFF)
         })
+        serviceScope.launch {
+            preferenceRepo.bigIcon.collect { forceUpdate = true }
+        }
     }
 
     override fun onDestroy() {
@@ -179,9 +180,10 @@ class UsageService : Service(), KoinComponent {
         }
     }
 
+    var forceUpdate = false
     var lastSnapshot: TrafficSnapshot = TrafficSnapshot()
     private suspend fun updateNotification(trafficSnapshot: TrafficSnapshot?) {
-        if (lastSnapshot.closeEnough(trafficSnapshot)) {
+        if (lastSnapshot.closeEnough(trafficSnapshot) && !forceUpdate) {
             Log.i("UsageService", "Skipped notification update: ${trafficSnapshot?.totalSpeed}")
             return
         }
@@ -214,8 +216,12 @@ class UsageService : Service(), KoinComponent {
         notificationManager?.notify(NOTIFICATION_ID, notification)
     }
 
-    fun createIcon(snapshot: TrafficSnapshot): IconCompat {
-        val bitmap = createBitmap(96, 96)
+    suspend fun createIcon(snapshot: TrafficSnapshot): IconCompat {
+        val bigIcon = if (preferenceRepo.bigIcon.first()) 2f else 1f
+        val density = Density(this@UsageService)
+        val multiplier = 24 * density.density * bigIcon / 96f
+
+        val bitmap = createBitmap((96 * multiplier).toInt(), (96 * multiplier).toInt())
         val canvas = NativeCanvas(bitmap)
 
         val text = smartFormat(snapshot.totalSpeed, true)
@@ -224,18 +230,18 @@ class UsageService : Service(), KoinComponent {
 
         val paint = Paint().apply {
             color = ContextCompat.getColor(this@UsageService, R.color.white)
-            textSize = 72f
+            textSize = 72f * multiplier
             textAlign = Paint.Align.CENTER
             typeface = resources.getFont(R.font.roboto_condensed_semi_bold)
-            letterSpacing = -0.05f
+            letterSpacing = -0.05f * multiplier
         }
-        canvas.drawText(speed, 48f, 56f, paint)
+        canvas.drawText(speed, 48f * multiplier, 56f * multiplier, paint)
 
         paint.apply {
-            textSize = 46f
-            letterSpacing = 0f
+            textSize = 46f * multiplier
+            letterSpacing = 0f * multiplier
         }
-        canvas.drawText(unit, 48f, 96f, paint)
+        canvas.drawText(unit, 48f * multiplier, 96f * multiplier, paint)
 
         return IconCompat.createWithBitmap(bitmap)
     }

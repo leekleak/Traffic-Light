@@ -19,4 +19,5 @@
     <string name="notifications">Notifications</string>
     <string name="screen_off_update">Update when screen is off</string>
     <string name="screen_off_update_description">Allows tracking on the AOD, but impacts battery.</string>
+    <string name="icon_resolution">Icon resolution</string>
 </resources>

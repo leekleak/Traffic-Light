@@ -1,8 +1,6 @@
 package com.leekleak.trafficlight.database
 
-import android.net.ConnectivityManager
 import android.net.TrafficStats
-import android.util.Log
 import androidx.room.Dao
 import androidx.room.Entity
 import androidx.room.Insert

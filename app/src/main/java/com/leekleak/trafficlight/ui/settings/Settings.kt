@@ -46,7 +46,18 @@ fun Settings(
                 ) {
                     viewModel.setModeAOD(it)
                 }
+                val bigIcon by viewModel.bigIcon.collectAsState()
+                SwitchPreference(
+                    title = "Oversample Icon",
+                    summary = "Enable on low resolution screens if the icon is blurry.",
+                    icon = null,
+                    value = bigIcon
+                ) {
+                    viewModel.setBigIcon(it)
+                }
+
             }
+
         }
     }
 }

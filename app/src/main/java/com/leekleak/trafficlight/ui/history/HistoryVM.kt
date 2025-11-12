@@ -23,7 +23,7 @@ class HistoryVM() : ViewModel(), KoinComponent {
             (1..28).map {
                 getDayUsage(now.minusDays(it.toLong()))
             }
-        ) {it.toList()}//.debounce { 500 }
+        ) {it.toList()}
 
     fun getDayUsage(date: LocalDate): Flow<DayUsage?> {
         return dayUsageRepo.getDayUsage(date)

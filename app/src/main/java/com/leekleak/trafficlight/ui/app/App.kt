@@ -8,6 +8,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.leekleak.trafficlight.services.UsageService
 import com.leekleak.trafficlight.ui.navigation.NavigationManager
 import com.leekleak.trafficlight.ui.permissions.Permissions
 import com.leekleak.trafficlight.util.hasBackgroundPermission
@@ -28,6 +29,10 @@ fun App() {
                 notificationPermission.value = hasNotificationPermission(context)
                 backgroundPermission.value = hasBackgroundPermission(context)
                 usagePermission.value = hasUsageStatsPermission(context)
+
+                if (notificationPermission.value && backgroundPermission.value && usagePermission.value) {
+                    UsageService.startService(context)
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)

@@ -3,7 +3,6 @@ package com.leekleak.trafficlight.database
 import android.app.usage.NetworkStatsManager
 import android.content.Context
 import android.content.Context.NETWORK_STATS_SERVICE
-import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -44,13 +43,13 @@ class DayUsageRepo(context: Context) {
         ).flow
     }
 
+    fun getMaxCombinedUsage(): Flow<Long> = dao.getMaxCombinedUsage()
+
     fun clearDB() = dao.clear()
 
     fun populateDb() {
         val suspiciousDays = mutableListOf<DayUsage>()
         for (i in 1..10000) {
-            Log.e("leekleak", "populateDb: $i")
-
             if (suspiciousDays.size == 31) {
                 suspiciousDays.forEach {
                     dao.deleteDayUsage(it)
@@ -64,7 +63,7 @@ class DayUsageRepo(context: Context) {
             val dayUsage = calculateDayUsage(date)
 
             suspiciousDays.add(dayUsage)
-            if (dayUsage.totalWifi() + dayUsage.totalCellular() != 0L) {
+            if (dayUsage.totalWifi + dayUsage.totalCellular != 0L) {
                 for (day in suspiciousDays) {
                     dao.addDayUsage(day)
                 }
@@ -83,7 +82,8 @@ class DayUsageRepo(context: Context) {
             val globalHour = dayStamp + k * 3_600_000L
             hours[globalHour] = getCurrentHourUsage(globalHour, globalHour + 3_600_000L)
         }
-        return DayUsage(dateTime.toLocalDate(), hours)
+
+        return DayUsage(dateTime.toLocalDate(), hours).also { it.categorizeUsage() }
     }
 
     fun getCurrentHourUsage(startTime: Long, endTime: Long): HourUsage {

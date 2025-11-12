@@ -167,6 +167,7 @@ class UsageService : Service(), KoinComponent {
         val stampNow = dateTime.toInstant(timezone).toEpochMilli()
 
         todayUsage.hours[stamp] = dayUsageRepo.getCurrentHourUsage(stamp, stampNow)
+        todayUsage.categorizeUsage()
     }
 
     var forceUpdate = false
@@ -186,13 +187,13 @@ class UsageService : Service(), KoinComponent {
         val title = getString(R.string.speed, speedFormatter.format(snapshot.totalSpeed))
         val spacing = 18
         val messageShort =
-            "\uD83D\uDEDC: ${sizeFormatter.format(todayUsage.totalWifi())}".clipAndPad(spacing) +
-            "\uD83D\uDCF6: ${sizeFormatter.format(todayUsage.totalCellular())}".clipAndPad(spacing)
+            "Wi-Fi: ${sizeFormatter.format(todayUsage.totalWifi)}".clipAndPad(spacing) +
+            "Mobile: ${sizeFormatter.format(todayUsage.totalCellular)}"
         val message =
-            "\uD83D\uDEDC: ${sizeFormatter.format(todayUsage.totalWifi())}\n".clipAndPad(spacing) +
-            "\uD83D\uDCF6: ${sizeFormatter.format(todayUsage.totalCellular())}\n".clipAndPad(spacing) +
-            "⬇\uFE0F: ${speedFormatter.format(snapshot.downSpeed)}\n".clipAndPad(spacing) +
-            "⬆\uFE0F: ${speedFormatter.format(snapshot.upSpeed)}\n".clipAndPad(spacing)
+            "Wi-Fi: ${sizeFormatter.format(todayUsage.totalWifi)}\n" +
+            "Mobile: ${sizeFormatter.format(todayUsage.totalCellular)}\n" +
+            "Down: ${speedFormatter.format(snapshot.downSpeed)}\n" +
+            "Up: ${speedFormatter.format(snapshot.upSpeed)}\n"
 
         notification = notificationBuilder
             .setSmallIcon(createIcon(snapshot))

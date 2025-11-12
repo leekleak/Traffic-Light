@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.charts.BarGraph
+import com.leekleak.trafficlight.charts.model.BarData
 import com.leekleak.trafficlight.database.DayUsage
 import com.leekleak.trafficlight.ui.history.dayUsageToBarData
 import com.leekleak.trafficlight.util.DataSize
@@ -53,17 +54,18 @@ fun Overview(
     paddingValues: PaddingValues
 ) {
     val viewModel = OverviewVM()
+    val todayUsage by viewModel.todayUsage.collectAsState(DayUsage())
 
     LazyColumn(
         modifier = Modifier.background(MaterialTheme.colorScheme.surface).fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = paddingValues
     ) {
-        TodayOverview(viewModel)
+        Overview(dayUsageToBarData(todayUsage), todayUsage.totalWifi, todayUsage.totalCellular)
     }
 }
 
-fun LazyListScope.TodayOverview(viewModel: OverviewVM) {
+fun LazyListScope.Overview(data: List<BarData>, wifi: Long, cellular: Long) {
     item {
         Text(
             modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),
@@ -73,9 +75,6 @@ fun LazyListScope.TodayOverview(viewModel: OverviewVM) {
         )
     }
     item {
-        val usage by viewModel.todayUsage.collectAsState(DayUsage())
-
-        val data = dayUsageToBarData(usage)
         Column (verticalArrangement = Arrangement.spacedBy(8.dp)){
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -84,12 +83,12 @@ fun LazyListScope.TodayOverview(viewModel: OverviewVM) {
                 SummaryItem(
                     painter = painterResource(R.drawable.wifi),
                     tint = MaterialTheme.colorScheme.primary,
-                    data = { usage.totalWifi() }
+                    data = { wifi }
                 )
                 SummaryItem(
                     painter = painterResource(R.drawable.cellular),
                     tint = MaterialTheme.colorScheme.tertiary,
-                    data = { usage.totalCellular() }
+                    data = { cellular }
                 )
             }
             Box(

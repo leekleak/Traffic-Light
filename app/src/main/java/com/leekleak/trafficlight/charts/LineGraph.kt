@@ -39,12 +39,12 @@ fun LineGraph(
             .fillMaxWidth()
             .height(32.dp)
     ) {
-        val wifitMaxWidth = size.width - if (data.second != 0L) 24.dp.toPx() else 0f
+        val wifiMaxWidth = size.width - if (data.second != 0L) 24.dp.toPx() else 0f
         val cellularMaxWidth = size.width - if (data.first != 0L) 24.dp.toPx() else 0f
         val wifiSizeX =
             min(
                 max((data.first.toDouble() / maximum.toDouble() * size.width).toFloat(), cornerRadius.x),
-                wifitMaxWidth
+                wifiMaxWidth
             )
         val cellularSizeX =
             min(
@@ -69,12 +69,9 @@ fun LineGraph(
             Size(size.width, size.height)
         )
 
-        val rects =
-            listOf(
-                RectDrawData(backgroundRect, backgroundColor),
-                RectDrawData(wifiRect, primaryColor),
-                RectDrawData(cellularRect, secondaryColor),
-            )
+        val rects = mutableListOf(RectDrawData(backgroundRect, backgroundColor))
+        if (data.first != 0L) rects.add(RectDrawData(wifiRect, primaryColor))
+        if (data.second != 0L) rects.add(RectDrawData(cellularRect, secondaryColor))
 
         for (data in rects) {
             val path = Path().apply {

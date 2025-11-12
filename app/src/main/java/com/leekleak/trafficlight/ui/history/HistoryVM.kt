@@ -18,7 +18,5 @@ class HistoryVM() : ViewModel(), KoinComponent {
     val usageHistoryFlow: Flow<PagingData<DayUsage>> =
         dayUsageRepo.getAllDayUsagePaged().cachedIn(viewModelScope)
 
-    fun getDayUsage(date: LocalDate): Flow<DayUsage?> {
-        return dayUsageRepo.getDayUsage(date)
-    }
+    val getMaxCombinedUsage: Flow<Long> = dayUsageRepo.getMaxCombinedUsage()
 }

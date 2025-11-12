@@ -18,10 +18,14 @@ import java.time.LocalDate
 @Entity
 data class DayUsage(
     @PrimaryKey val date: LocalDate = LocalDate.now(),
-    val hours: MutableMap<Long, HourUsage> = mutableMapOf()
+    val hours: MutableMap<Long, HourUsage> = mutableMapOf(),
+    var totalWifi: Long = 0,
+    var totalCellular: Long = 0,
 ) {
-    fun totalWifi(): Long = hours.values.sumOf { it.wifi }
-    fun totalCellular(): Long = hours.values.sumOf { it.cellular }
+    fun categorizeUsage() {
+        totalWifi = hours.map { it.value.wifi }.sum()
+        totalCellular = hours.map { it.value.cellular }.sum()
+    }
 }
 
 @Dao
@@ -52,6 +56,9 @@ interface DayUsageDao {
 
     @Query("SELECT * FROM DayUsage WHERE date < (SELECT MAX(date) FROM DayUsage) ORDER BY date DESC")
     fun getAllDayUsagePaging(): PagingSource<Int, DayUsage>
+
+    @Query("SELECT MAX(totalWifi + totalCellular) FROM DayUsage")
+    fun getMaxCombinedUsage(): Flow<Long>
 }
 
 @Serializable

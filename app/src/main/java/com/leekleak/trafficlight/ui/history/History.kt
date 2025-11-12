@@ -25,10 +25,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,22 +71,24 @@ fun History(
 fun Dashboard(viewModel: HistoryVM, paddingValues: PaddingValues) {
     val haptic = LocalHapticFeedback.current
     val pages = viewModel.usageHistoryFlow.collectAsLazyPagingItems()
-    var selected by remember { mutableIntStateOf(-1) }
+    val maxSize = viewModel.getMaxCombinedUsage.collectAsState(0L)
+    val selected = remember { mutableIntStateOf(-1) }
 
     LazyColumn(
         modifier = Modifier.background(MaterialTheme.colorScheme.surface).fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = paddingValues
     ) {
-        HistoryOverview(pages, selected) { i: Int ->
-            selected = i
+        HistoryOverview(pages, maxSize.value, selected.intValue) { i: Int ->
+            selected.intValue = i
             haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
         }
     }
 }
 
 fun LazyListScope.HistoryOverview(
-    usageHistory: LazyPagingItems<DayUsage>,
+    pages: LazyPagingItems<DayUsage>,
+    maxSize: Long,
     selected: Int,
     onClick: (i: Int) -> Unit
 ) {
@@ -99,10 +100,9 @@ fun LazyListScope.HistoryOverview(
             text = stringResource(R.string.history)
         )
     }
-    val maximum = 5 * 1024 * 1024 * 1024L
-    items(usageHistory.itemCount, key = usageHistory.itemKey { it.date }) { index ->
-        usageHistory[index]?.let {
-            HistoryItem(maximum, it, index, selected, onClick)
+    items(pages.itemCount, key = pages.itemKey { it.date }) { index ->
+        pages[index]?.let {
+            HistoryItem(maxSize, it, index, selected, onClick)
         }
     }
 }
@@ -159,7 +159,7 @@ fun HistoryItem(
                     if (!selected) {
                         LineGraph(
                             maximum = maximum,
-                            data = Pair(usage.totalWifi(), usage.totalCellular())
+                            data = Pair(usage.totalWifi, usage.totalCellular)
                         )
                     } else {
                         Row (
@@ -175,20 +175,18 @@ fun HistoryItem(
                                 description = stringResource(R.string.wifi),
                                 bgTint = MaterialTheme.colorScheme.primary,
                                 tint = MaterialTheme.colorScheme.onPrimary,
-                                value = usage.totalWifi()
+                                value = usage.totalWifi
                             )
                             DataBadge(
                                 iconId = R.drawable.cellular,
                                 description = stringResource(R.string.cellular),
                                 bgTint = MaterialTheme.colorScheme.tertiary,
                                 tint = MaterialTheme.colorScheme.onTertiary,
-                                value = usage.totalCellular()
+                                value = usage.totalCellular
                             )
                         }
                     }
-
                 }
-
             }
         }
         AnimatedVisibility(

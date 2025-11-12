@@ -28,7 +28,7 @@ data class DataSize (
     }
 
     private fun applyPrecision(size: Float): String {
-        return if (precision == 0) size.toInt().toString()
+        return if (precision == 0 || size.toInt() >= 100) size.toInt().toString()
             else ((size * precisionDec).toInt().toFloat() / precisionDec).toString() // Round down
     }
 

@@ -2,21 +2,17 @@ package com.leekleak.trafficlight.ui.history
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,43 +25,36 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.leekleak.trafficlight.BuildConfig
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.charts.BarGraph
 import com.leekleak.trafficlight.charts.LineGraph
 import com.leekleak.trafficlight.charts.model.BarData
 import com.leekleak.trafficlight.database.DayUsage
-import com.leekleak.trafficlight.util.DataSize
 import com.leekleak.trafficlight.util.SizeFormatter
 import com.leekleak.trafficlight.util.padHour
-import kotlinx.coroutines.delay
 import java.time.Instant
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.TextStyle
@@ -76,111 +65,32 @@ fun History(
     paddingValues: PaddingValues
 ) {
     val viewModel = HistoryVM()
-
-    if (BuildConfig.DEBUG) {
-        viewModel.pop() // Populate the database with some mock data
-    }
-
     Dashboard(viewModel, paddingValues)
-}
-
-@Composable
-fun RowScope.SummaryItem(
-    painter: Painter,
-    tint: Color,
-    data: () -> Long
-) {
-    val animation = remember { Animatable(0f) }
-    val haptic = LocalHapticFeedback.current
-    Row (
-        modifier = Modifier
-            .weight(1f + animation.value / 256f)
-            .clip(MaterialTheme.shapes.large)
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onPress = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        animation.animateTo(
-                            64f,
-                            spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessMedium)
-                        )
-                        tryAwaitRelease()
-                        animation.animateTo(0f)
-                    },
-                )
-            },
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        val text = DataSize(value = data().toFloat(), precision = 2).toStringParts()
-
-        Text(
-            fontSize = 76.sp,
-            text = text[0],
-            fontFamily = chonkyFont(animation.value),
-            color = tint
-        )
-        Column (
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(top = 6.dp, start = 2.dp),
-            verticalArrangement = Arrangement.spacedBy((-8).dp)
-        ) {
-            Text(
-                fontSize = 42.sp,
-                text = "." + text[1].padEnd(2, '0'),
-                fontFamily = chonkyFont(animation.value),
-                color = tint
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                Text(
-                    fontSize = 24.sp,
-                    text = text[2],
-                    fontFamily = chonkyFont(animation.value),
-                    color = tint,
-                )
-                Icon(
-                    painter = painter,
-                    contentDescription = null,
-                    tint = tint,
-                )
-            }
-        }
-    }
 }
 
 @Composable
 fun Dashboard(viewModel: HistoryVM, paddingValues: PaddingValues) {
     val haptic = LocalHapticFeedback.current
-    var currentDate by remember { mutableStateOf(LocalDate.now()) }
-    val usageHistory by viewModel.usageHistory(currentDate).collectAsState(null)
+    val pages = viewModel.usageHistoryFlow.collectAsLazyPagingItems()
     var selected by remember { mutableIntStateOf(-1) }
-
-    LaunchedEffect(Unit) {
-        while (true) {
-            if (currentDate != LocalDate.now()) {
-                currentDate = LocalDate.now()
-            }
-            delay(5000L)
-        }
-    }
 
     LazyColumn(
         modifier = Modifier.background(MaterialTheme.colorScheme.surface).fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = paddingValues
     ) {
-        HistoryOverview(usageHistory, selected, onClick = { i: Int ->
+        HistoryOverview(pages, selected) { i: Int ->
             selected = i
             haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-        })
+        }
     }
 }
 
-fun LazyListScope.HistoryOverview(usageHistory: List<DayUsage?>?, selected: Int, onClick: (i: Int) -> Unit) {
+fun LazyListScope.HistoryOverview(
+    usageHistory: LazyPagingItems<DayUsage>,
+    selected: Int,
+    onClick: (i: Int) -> Unit
+) {
     item {
         Text(
             modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),
@@ -189,21 +99,10 @@ fun LazyListScope.HistoryOverview(usageHistory: List<DayUsage?>?, selected: Int,
             text = stringResource(R.string.history)
         )
     }
-    if (usageHistory != null) {
-        if (usageHistory.isEmpty()) {
-            item {
-                HistoryPlaceholder()
-            }
-        }
-        else {
-            val maximum = usageHistory.maxOf { day -> day?.hours?.entries?.sumOf { it.value.total } ?: 0 }
-            usageHistory.forEachIndexed { i, it ->
-                if (it != null) {
-                    item {
-                        HistoryItem(maximum, it, i, selected, onClick)
-                    }
-                }
-            }
+    val maximum = 5 * 1024 * 1024 * 1024L
+    items(usageHistory.itemCount, key = usageHistory.itemKey { it.date }) { index ->
+        usageHistory[index]?.let {
+            HistoryItem(maximum, it, index, selected, onClick)
         }
     }
 }
@@ -345,32 +244,6 @@ fun DataBadge (
     }
 }
 
-@Composable
-fun HistoryPlaceholder() {
-    Column (
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(MaterialTheme.shapes.large)
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-
-    ) {
-        Icon(
-            modifier = Modifier.width(200.dp),
-            painter = painterResource(R.drawable.fly),
-            contentDescription = stringResource(R.string.fly),
-            tint = MaterialTheme.colorScheme.primary,
-        )
-        Text(
-            stringResource(R.string.nothing_here),
-            fontFamily = classyFont(),
-            color = MaterialTheme.colorScheme.primary,
-        )
-    }
-
-}
-
 fun dayUsageToBarData(usage: DayUsage): List<BarData> {
     val data: MutableList<BarData> = mutableListOf()
     for (i in 0..22 step 2) {
@@ -393,14 +266,3 @@ fun classyFont(): FontFamily =
             R.font.mendl_serif
         ),
     )
-@OptIn(ExperimentalTextApi::class)
-fun chonkyFont(opticalSize: Float = 0f): FontFamily =
-    FontFamily(
-        Font(
-            R.font.jaro,
-            variationSettings = FontVariation.Settings(
-                FontVariation.Setting("opsz", 80f - opticalSize)
-            )
-        ),
-    )
-

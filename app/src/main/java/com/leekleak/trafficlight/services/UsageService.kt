@@ -4,7 +4,6 @@ import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.app.usage.NetworkStatsManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -24,10 +23,8 @@ import com.leekleak.trafficlight.MainActivity
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.database.DayUsage
 import com.leekleak.trafficlight.database.DayUsageRepo
-import com.leekleak.trafficlight.database.HourUsage
 import com.leekleak.trafficlight.database.TrafficSnapshot
 import com.leekleak.trafficlight.model.PreferenceRepo
-import com.leekleak.trafficlight.util.NetworkType
 import com.leekleak.trafficlight.util.SizeFormatter
 import com.leekleak.trafficlight.util.SizeFormatter.Companion.smartFormat
 import com.leekleak.trafficlight.util.clipAndPad
@@ -36,11 +33,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
@@ -51,8 +51,6 @@ class UsageService : Service(), KoinComponent {
 
     private val dayUsageRepo: DayUsageRepo by inject()
     private val preferenceRepo: PreferenceRepo by inject()
-
-    private var networkStatsManager: NetworkStatsManager? = null
     private var notificationManager: NotificationManager? = null
 
     private var notification: Notification? = null
@@ -117,6 +115,7 @@ class UsageService : Service(), KoinComponent {
         if (job == null) {
             startJob()
 
+            todayUsage = dayUsageRepo.calculateDayUsage(LocalDate.now())
             notificationBuilder
                 .setContentIntent(
                     PendingIntent.getActivity(
@@ -129,7 +128,6 @@ class UsageService : Service(), KoinComponent {
                     onDismissedIntent(this)
                 )
             notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager?
-            networkStatsManager = getSystemService(NETWORK_STATS_SERVICE) as NetworkStatsManager?
 
             try {
                 ServiceCompat.startForeground(
@@ -161,23 +159,14 @@ class UsageService : Service(), KoinComponent {
         }
     }
 
-    private suspend fun updateDatabase() {
+    private fun updateDatabase() {
         val dateTime = LocalDateTime.now()
-        if (dayUsageRepo.dayUsageExists(dateTime.toLocalDate())) {
-            val usage = dayUsageRepo.getDayUsage(dateTime.toLocalDate()).first()
-            val timezone = ZoneId.systemDefault().rules.getOffset(Instant.now())
+        val timezone = ZoneId.systemDefault().rules.getOffset(Instant.now())
 
-            usage?.let {
-                val stamp = dateTime.truncatedTo(ChronoUnit.HOURS).toInstant(timezone).toEpochMilli()
-                val stampNow = dateTime.toInstant(timezone).toEpochMilli()
+        val stamp = dateTime.truncatedTo(ChronoUnit.HOURS).toInstant(timezone).toEpochMilli()
+        val stampNow = dateTime.toInstant(timezone).toEpochMilli()
 
-                it.hours[stamp] = getCurrentHourUsage(stamp, stampNow)
-
-                dayUsageRepo.updateDayUsage(it)
-            }
-        } else {
-            dayUsageRepo.addDayUsage(DayUsage(dateTime.toLocalDate()))
-        }
+        todayUsage.hours[stamp] = dayUsageRepo.getCurrentHourUsage(stamp, stampNow)
     }
 
     var forceUpdate = false
@@ -192,17 +181,16 @@ class UsageService : Service(), KoinComponent {
 
         lastSnapshot = snapshot.copy()
 
-        val todayUsage = dayUsageRepo.getTodayUsage().first()
         val speedFormatter = SizeFormatter(true, 0)
         val sizeFormatter = SizeFormatter(false, 2)
         val title = getString(R.string.speed, speedFormatter.format(snapshot.totalSpeed))
         val spacing = 18
         val messageShort =
-            "\uD83D\uDEDC: ${sizeFormatter.format(todayUsage?.totalWifi() ?: 0)}".clipAndPad(spacing) +
-            "\uD83D\uDCF6: ${sizeFormatter.format(todayUsage?.totalCellular() ?: 0)}".clipAndPad(spacing)
+            "\uD83D\uDEDC: ${sizeFormatter.format(todayUsage.totalWifi())}".clipAndPad(spacing) +
+            "\uD83D\uDCF6: ${sizeFormatter.format(todayUsage.totalCellular())}".clipAndPad(spacing)
         val message =
-            "\uD83D\uDEDC: ${sizeFormatter.format(todayUsage?.totalWifi() ?: 0)}\n".clipAndPad(spacing) +
-            "\uD83D\uDCF6: ${sizeFormatter.format(todayUsage?.totalCellular() ?: 0)}\n".clipAndPad(spacing) +
+            "\uD83D\uDEDC: ${sizeFormatter.format(todayUsage.totalWifi())}\n".clipAndPad(spacing) +
+            "\uD83D\uDCF6: ${sizeFormatter.format(todayUsage.totalCellular())}\n".clipAndPad(spacing) +
             "⬇\uFE0F: ${speedFormatter.format(snapshot.downSpeed)}\n".clipAndPad(spacing) +
             "⬆\uFE0F: ${speedFormatter.format(snapshot.upSpeed)}\n".clipAndPad(spacing)
 
@@ -246,29 +234,17 @@ class UsageService : Service(), KoinComponent {
         return IconCompat.createWithBitmap(bitmap)
     }
 
-    fun getCurrentHourUsage(startTime: Long, endTime: Long): HourUsage {
-        val statsWifi = networkStatsManager?.querySummaryForDevice(NetworkType.Wifi.ordinal, null, startTime, endTime)
-        val statsMobile = networkStatsManager?.querySummaryForDevice(NetworkType.Cellular.ordinal, null, startTime, endTime)
-        val hourUsage = HourUsage()
-
-        statsMobile?.let {
-            hourUsage.cellular += it.txBytes + it.rxBytes
-            hourUsage.upload += it.txBytes
-            hourUsage.download += it.rxBytes
-        }
-
-        statsWifi?.let {
-            hourUsage.wifi += it.txBytes + it.rxBytes
-            hourUsage.upload += it.txBytes
-            hourUsage.download += it.rxBytes
-        }
-
-        return hourUsage
-    }
-
     companion object {
         const val NOTIFICATION_ID = 228
         const val NOTIFICATION_CHANNEL_ID = "PersistentNotification"
+
+        private val _todayUsageFlow = MutableStateFlow(DayUsage())
+        val todayUsageFlow = _todayUsageFlow.asStateFlow()
+        var todayUsage: DayUsage
+            get() = _todayUsageFlow.value
+            set(value) {
+                _todayUsageFlow.value = value
+            }
 
         private var instance: UsageService? = null
 

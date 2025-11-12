@@ -42,22 +42,30 @@ fun Settings(
                     title = stringResource(R.string.screen_off_update),
                     summary = stringResource(R.string.screen_off_update_description),
                     icon = null,
-                    value = modeAOD
-                ) {
-                    viewModel.setModeAOD(it)
-                }
+                    value = modeAOD,
+                    onValueChanged = { viewModel.setModeAOD(it) }
+                )
                 val bigIcon by viewModel.bigIcon.collectAsState()
                 SwitchPreference(
-                    title = "Oversample Icon",
-                    summary = "Enable on low resolution screens if the icon is blurry.",
+                    title = stringResource(R.string.oversample_icon),
+                    summary = stringResource(R.string.oversample_icon_description),
                     icon = null,
-                    value = bigIcon
-                ) {
-                    viewModel.setBigIcon(it)
-                }
-
+                    value = bigIcon,
+                    onValueChanged = { viewModel.setBigIcon(it) }
+                )
             }
-
+            PreferenceCategory(title = "History") {
+                val dbSize by viewModel.dbSize.collectAsState()
+                Preference(
+                    title = "Repopulate History",
+                    summary = null,
+                    icon = null,
+                    onClick = { viewModel.repopulateDB() },
+                    controls = {
+                        Text("$dbSize days")
+                    }
+                )
+            }
         }
     }
 }

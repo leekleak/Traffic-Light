@@ -11,10 +11,8 @@ import com.leekleak.trafficlight.database.TrafficSnapshot.Converters
 @TypeConverters(Converters::class)
 abstract class DayUsageDatabase : RoomDatabase() {
     abstract fun dayUsageDao(): DayUsageDao
-
     companion object {
         private var _instance: DayUsageDatabase? = null
-
         fun getInstance(context: Context): DayUsageDatabase {
             if (_instance == null) {
                 _instance = Room.databaseBuilder(

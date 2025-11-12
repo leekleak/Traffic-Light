@@ -1,35 +1,52 @@
 package com.leekleak.trafficlight.ui.overview
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.charts.BarGraph
 import com.leekleak.trafficlight.database.DayUsage
-import com.leekleak.trafficlight.ui.history.SummaryItem
 import com.leekleak.trafficlight.ui.history.dayUsageToBarData
+import com.leekleak.trafficlight.util.DataSize
 
 @Composable
 fun Overview(
@@ -97,3 +114,83 @@ fun LazyListScope.TodayOverview(viewModel: OverviewVM) {
         }
     }
 }
+
+@Composable
+fun RowScope.SummaryItem(
+    painter: Painter,
+    tint: Color,
+    data: () -> Long
+) {
+    val animation = remember { Animatable(0f) }
+    val haptic = LocalHapticFeedback.current
+    Row (
+        modifier = Modifier
+            .weight(1f + animation.value / 256f)
+            .clip(MaterialTheme.shapes.large)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
+                        animation.animateTo(
+                            64f,
+                            spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessMedium)
+                        )
+                        tryAwaitRelease()
+                        haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                        animation.animateTo(0f)
+                    },
+                )
+            },
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        val text = DataSize(value = data().toFloat(), precision = 2).toStringParts()
+        Text(
+            fontSize = 64.sp,
+            text = text[0],
+            fontFamily = chonkyFont(animation.value),
+            color = tint
+        )
+        Column (
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(top = 3.dp, start = 2.dp),
+            verticalArrangement = Arrangement.spacedBy((-8).dp)
+        ) {
+            Text(
+                fontSize = 36.sp,
+                text = "." + text[1].padEnd(2, '0'),
+                maxLines = 1,
+                fontFamily = chonkyFont(animation.value),
+                color = tint,
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    fontSize = 22.sp,
+                    text = text[2],
+                    fontFamily = chonkyFont(animation.value),
+                    color = tint,
+                )
+                Icon(
+                    painter = painter,
+                    contentDescription = null,
+                    tint = tint,
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalTextApi::class)
+fun chonkyFont(opticalSize: Float = 0f): FontFamily =
+    FontFamily(
+        Font(
+            R.font.jaro,
+            variationSettings = FontVariation.Settings(
+                FontVariation.Setting("opsz", 80f - opticalSize)
+            )
+        ),
+    )

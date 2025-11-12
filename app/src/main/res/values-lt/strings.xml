@@ -7,8 +7,6 @@
     <string name="history">Istorija</string>
     <string name="wifi">Wi-Fi</string>
     <string name="cellular">Mobilieji</string>
-    <string name="fly">Musė</string>
-    <string name="nothing_here">Čia dar tuščia...</string>
     <string name="settings">Nustatymai</string>
     <string name="notification_permission">Reikia leidimo skelbti pranešimus</string>
     <string name="permissions">Leidimai</string>
@@ -17,4 +15,9 @@
     <string name="battery_optimization_description">Jei įjungta, sistema gali sustabdyti programėlės procesą.</string>
     <string name="usage_statistics">Naudojimo Statistika</string>
     <string name="usage_statistics_description">Reikalinga istorinių duomenų rinkimui.</string>
+    <string name="notifications">Pranešimas</string>
+    <string name="screen_off_update">Atnaujinti išjungus ekraną</string>
+    <string name="screen_off_update_description">Leidžia sekti duomenų naudojimą \"AOD\" režime</string>
+    <string name="oversample_icon">Paaštrinti ikoną</string>
+    <string name="oversample_icon_description">Padeda išspręsti išsiliejusią ikoną.</string>
 </resources>

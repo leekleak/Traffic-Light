@@ -4,8 +4,6 @@
     <string name="history">History</string>
     <string name="wifi">Wi-Fi</string>
     <string name="cellular">Cellular</string>
-    <string name="fly">A fly</string>
-    <string name="nothing_here">There\'s nothing here yet…</string>
     <string name="grant">Grant</string>
     <string name="permissions">Permissions</string>
     <string name="speed">Speed: %1$s</string>
@@ -16,8 +14,9 @@
     <string name="battery_optimization_description">Must be disabled to stop the phone killing the background service after a while.</string>
     <string name="usage_statistics">Usage Statistics</string>
     <string name="usage_statistics_description">The least buggy way to get aggregated network usage data on Android.</string>
-    <string name="notifications">Notifications</string>
+    <string name="notifications">Notification</string>
     <string name="screen_off_update">Update when screen is off</string>
     <string name="screen_off_update_description">Allows tracking on the AOD, but impacts battery.</string>
-    <string name="icon_resolution">Icon resolution</string>
+    <string name="oversample_icon">Oversample Icon</string>
+    <string name="oversample_icon_description">Render the icon at a larger resolution if it\'s blurry.</string>
 </resources>

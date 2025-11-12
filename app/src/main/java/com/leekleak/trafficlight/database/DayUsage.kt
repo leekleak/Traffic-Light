@@ -1,7 +1,9 @@
 package com.leekleak.trafficlight.database
 
 import android.net.TrafficStats
+import androidx.paging.PagingSource
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.PrimaryKey
@@ -38,6 +40,18 @@ interface DayUsageDao {
 
     @Update
     fun updateDayUsage(dayUsage: DayUsage)
+
+    @Delete
+    fun deleteDayUsage(dayUsage: DayUsage)
+
+    @Query("SELECT COUNT(*) FROM DayUsage")
+    fun getDBSize(): Flow<Int>
+
+    @Query("DELETE FROM DayUsage")
+    fun clear()
+
+    @Query("SELECT * FROM DayUsage WHERE date < (SELECT MAX(date) FROM DayUsage) ORDER BY date DESC")
+    fun getAllDayUsagePaging(): PagingSource<Int, DayUsage>
 }
 
 @Serializable

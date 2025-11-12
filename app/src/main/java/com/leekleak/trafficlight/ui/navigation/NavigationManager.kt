@@ -1,5 +1,6 @@
 package com.leekleak.trafficlight.ui.navigation
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -28,6 +29,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
@@ -62,6 +65,7 @@ sealed interface NavKeys : NavKey {
     }
 }
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NavigationManager() {
@@ -137,6 +141,7 @@ fun NavigationManager() {
 
 @Composable
 fun NavigationButton(currentBackstack: NavKeys, route: NavKeys, icon: Int, onClick: () -> Unit) {
+    val haptic = LocalHapticFeedback.current
     IconButton(
         colors =
             if (currentBackstack == route){
@@ -144,7 +149,10 @@ fun NavigationButton(currentBackstack: NavKeys, route: NavKeys, icon: Int, onCli
             } else {
                 IconButtonDefaults.iconButtonColors()
             },
-        onClick = { onClick() }
+        onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            onClick()
+        }
     ) {
         Icon(
             painter = painterResource(icon),

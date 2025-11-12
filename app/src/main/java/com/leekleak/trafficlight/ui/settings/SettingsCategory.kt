@@ -25,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 
 
@@ -37,15 +39,12 @@ fun PreferenceCategory(
         modifier = Modifier.fillMaxWidth(),
     ) {
         if (title != null) {
-            Row(
-                modifier = Modifier.padding(8.dp)
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-            }
+            Text(
+                modifier = Modifier.padding(8.dp),
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.secondary
+            )
         }
         Column(
             modifier = Modifier.clip(MaterialTheme.shapes.medium),
@@ -129,17 +128,26 @@ fun SwitchPreference(
     enabled: Boolean = true,
     onValueChanged: (Boolean) -> Unit
 ) {
+    val haptic = LocalHapticFeedback.current
+
+    fun onClick(state: Boolean) {
+        val feedback = if (state) HapticFeedbackType.ToggleOn else HapticFeedbackType.ToggleOff
+        haptic.performHapticFeedback(feedback)
+        onValueChanged(state)
+    }
     Preference(
         title = title,
         icon = icon,
         summary = summary,
         enabled = enabled,
         onClick = {
-            onValueChanged(!value)
+            onClick(!value)
         },
         controls = {
             Switch(
-                enabled = enabled, checked = value, onCheckedChange = onValueChanged,
+                enabled = enabled, checked = value, onCheckedChange = {
+                    onClick(it)
+                },
             )
         },
     )

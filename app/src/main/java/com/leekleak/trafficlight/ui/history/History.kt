@@ -1,5 +1,6 @@
 package com.leekleak.trafficlight.ui.history
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
@@ -20,14 +21,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,20 +47,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemKey
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.charts.BarGraph
 import com.leekleak.trafficlight.charts.LineGraph
 import com.leekleak.trafficlight.charts.model.BarData
 import com.leekleak.trafficlight.database.DayUsage
+import com.leekleak.trafficlight.database.HourUsage
 import com.leekleak.trafficlight.util.SizeFormatter
 import com.leekleak.trafficlight.util.padHour
+import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.TextStyle
+import java.time.temporal.ChronoUnit
 import java.util.Locale
 
 @Composable
@@ -70,39 +75,38 @@ fun History(
 @Composable
 fun Dashboard(viewModel: HistoryVM, paddingValues: PaddingValues) {
     val haptic = LocalHapticFeedback.current
-    val pages = viewModel.usageHistoryFlow.collectAsLazyPagingItems()
     val maxSize = viewModel.getMaxCombinedUsage.collectAsState(0L)
-    val selected = remember { mutableIntStateOf(-1) }
+    val lastDay by viewModel.lastDayFlow.collectAsState(LocalDate.now())
+    val duration = Duration.between(
+        lastDay.atStartOfDay(),
+        LocalDate.now().atStartOfDay(),
+    )
+
+    var selected by remember { mutableIntStateOf(-1) }
 
     LazyColumn(
         modifier = Modifier.background(MaterialTheme.colorScheme.surface).fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = paddingValues
     ) {
-        HistoryOverview(pages, maxSize.value, selected.intValue) { i: Int ->
-            selected.intValue = i
-            haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-        }
-    }
-}
 
-fun LazyListScope.HistoryOverview(
-    pages: LazyPagingItems<DayUsage>,
-    maxSize: Long,
-    selected: Int,
-    onClick: (i: Int) -> Unit
-) {
-    item {
-        Text(
-            modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            text = stringResource(R.string.history)
-        )
-    }
-    items(pages.itemCount, key = pages.itemKey { it.date }) { index ->
-        pages[index]?.let {
-            HistoryItem(maxSize, it, index, selected, onClick)
+        item {
+            Text(
+                modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                text = stringResource(R.string.history)
+            )
+        }
+
+        Log.e("leekleak", duration.toDays().toString())
+        if (duration.toDays().toInt() > 0) {
+            items(duration.toDays().toInt(), key = { it }) { index ->
+                HistoryItem(viewModel, maxSize.value, index, selected, { i: Int ->
+                    selected = i
+                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                })
+            }
         }
     }
 }
@@ -110,12 +114,18 @@ fun LazyListScope.HistoryOverview(
 @OptIn(ExperimentalTextApi::class)
 @Composable
 fun HistoryItem(
+    viewModel: HistoryVM,
     maximum: Long,
-    usage: DayUsage,
     i: Int,
     selected: Int,
     onClick: (i: Int) -> Unit
 ) {
+    val timezone = ZoneId.systemDefault().rules.getOffset(Instant.now())
+    val date = LocalDate.now().minusDays(i.toLong())
+    val dayStamp = date.atStartOfDay().truncatedTo(ChronoUnit.DAYS).toInstant(timezone).toEpochMilli()
+    val usage by viewModel.dayUsage(dayStamp, dayStamp + 3_600_000L * 23).collectAsState(listOf())
+    val totalWifi = usage.sumOf { it.totalWifi }
+    val totalCellular = usage.sumOf { it.totalCellular }
     Column (
         modifier = Modifier
             .clip(MaterialTheme.shapes.large)
@@ -135,7 +145,7 @@ fun HistoryItem(
                 Column {
                     Text(
                         modifier = Modifier.width(86.sp.value.dp),
-                        text = usage.date.toString().substring(5),
+                        text = date.toString().substring(5),
                         autoSize = TextAutoSize.StepBased(8.sp, 26.sp),
                         maxLines = 1,
                         fontFamily = classyFont(),
@@ -144,7 +154,7 @@ fun HistoryItem(
                     AnimatedVisibility(selected == i) {
                         Text(
                             modifier = Modifier.width(86.sp.value.dp),
-                            text = usage.date.dayOfWeek
+                            text = date.dayOfWeek
                                 .getDisplayName(TextStyle.FULL_STANDALONE, Locale.getDefault())
                                 .replaceFirstChar(Char::titlecase),
                             autoSize = TextAutoSize.StepBased(8.sp, 18.sp),
@@ -159,7 +169,7 @@ fun HistoryItem(
                     if (!selected) {
                         LineGraph(
                             maximum = maximum,
-                            data = Pair(usage.totalWifi, usage.totalCellular)
+                            data = Pair(totalWifi, totalCellular)
                         )
                     } else {
                         Row (
@@ -175,14 +185,14 @@ fun HistoryItem(
                                 description = stringResource(R.string.wifi),
                                 bgTint = MaterialTheme.colorScheme.primary,
                                 tint = MaterialTheme.colorScheme.onPrimary,
-                                value = usage.totalWifi
+                                value = totalWifi
                             )
                             DataBadge(
                                 iconId = R.drawable.cellular,
                                 description = stringResource(R.string.cellular),
                                 bgTint = MaterialTheme.colorScheme.tertiary,
                                 tint = MaterialTheme.colorScheme.onTertiary,
-                                value = usage.totalCellular
+                                value = totalCellular
                             )
                         }
                     }
@@ -242,20 +252,16 @@ fun DataBadge (
     }
 }
 
-fun dayUsageToBarData(usage: DayUsage): List<BarData> {
+fun dayUsageToBarData(hours: List<HourUsage>): List<BarData> {
     val data: MutableList<BarData> = mutableListOf()
     for (i in 0..22 step 2) {
         data.add(BarData(padHour(i), 0.0, 0.0))
     }
-    for (i in usage.hours) {
-        val hour = getHourFromMillis(i.key) / 2
-        data[hour] += BarData(padHour(hour * 2), i.value.cellular.toDouble(), i.value.wifi.toDouble())
+    for (i in 0..<hours.size) {
+        val hour = i / 2
+        data[hour] += BarData(padHour(hour * 2), hours[i].totalCellular.toDouble(), hours[i].totalWifi.toDouble())
     }
     return data
-}
-
-fun getHourFromMillis(millis: Long): Int {
-    return LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()).hour
 }
 
 fun classyFont(): FontFamily =

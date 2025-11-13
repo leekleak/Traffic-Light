@@ -9,13 +9,11 @@ datastore = "1.1.7"
 kotlin = "2.2.21"
 kotlinxSerializationJson = "1.9.0"
 ksp = "2.2.20-2.0.4"
-pagingCompose = "3.4.0-alpha04"
 roomVersion = "2.8.3"
 koin-bom = "4.1.1"
 material3 = "1.5.0-alpha08"
 
 nav3Core = "1.0.0-rc01"
-pagingCommon = "3.3.6"
 
 [libraries]
 
@@ -33,8 +31,6 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 # Room
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomVersion" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomVersion" }
-androidx-room-paging = { module = "androidx.room:room-paging", version.ref = "roomVersion" }
-androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "pagingCompose" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomVersion" }
 
 # Koin
@@ -52,7 +48,6 @@ androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", vers
 # DataStore
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
-androidx-paging-common = { group = "androidx.paging", name = "paging-common", version.ref = "pagingCommon" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

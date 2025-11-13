@@ -7,7 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.leekleak.trafficlight.database.DayUsage
 import com.leekleak.trafficlight.database.DayUsageDao
 import com.leekleak.trafficlight.database.DayUsageDatabase
-import com.leekleak.trafficlight.database.HourUsage
+import com.leekleak.trafficlight.database.HourData
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -39,9 +39,9 @@ class DatabaseTest {
     @Throws(Exception::class)
     fun writeUserAndReadInList() {
         for (i in 1..10) {
-            val hours: MutableMap<Long, HourUsage> = mutableMapOf()
+            val hours: MutableMap<Long, HourData> = mutableMapOf()
             for (k in 0..23) {
-                hours[k.toLong()] = HourUsage(k.toLong(), 0)
+                hours[k.toLong()] = HourData(k.toLong(), 0)
             }
 
             val dayUsage = DayUsage(

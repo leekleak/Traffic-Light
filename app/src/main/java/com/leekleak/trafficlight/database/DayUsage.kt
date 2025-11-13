@@ -1,7 +1,6 @@
 package com.leekleak.trafficlight.database
 
 import android.net.TrafficStats
-import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Entity
@@ -18,7 +17,7 @@ import java.time.LocalDate
 @Entity
 data class DayUsage(
     @PrimaryKey val date: LocalDate = LocalDate.now(),
-    val hours: MutableMap<Long, HourUsage> = mutableMapOf(),
+    val hours: MutableMap<Long, HourData> = mutableMapOf(),
     var totalWifi: Long = 0,
     var totalCellular: Long = 0,
 ) {
@@ -54,15 +53,12 @@ interface DayUsageDao {
     @Query("DELETE FROM DayUsage")
     fun clear()
 
-    @Query("SELECT * FROM DayUsage WHERE date < (SELECT MAX(date) FROM DayUsage) ORDER BY date DESC")
-    fun getAllDayUsagePaging(): PagingSource<Int, DayUsage>
-
     @Query("SELECT MAX(totalWifi + totalCellular) FROM DayUsage")
     fun getMaxCombinedUsage(): Flow<Long>
 }
 
 @Serializable
-data class HourUsage(
+data class HourData(
     var upload: Long = 0,
     var download: Long = 0,
     var wifi: Long = 0,
@@ -71,8 +67,15 @@ data class HourUsage(
     val total: Long
         get() = upload + download
 
-    operator fun plus(other: HourUsage): HourUsage {
-        return HourUsage(
+    fun toHourUsage(): HourUsage {
+        return HourUsage(0,
+            wifi,
+            cellular
+        )
+    }
+
+    operator fun plus(other: HourData): HourData {
+        return HourData(
             upload + other.upload,
             download + other.download,
             wifi + other.wifi,
@@ -140,8 +143,8 @@ data class TrafficSnapshot (
         }
     }
 
-    fun toHourUsage(): HourUsage {
-        return HourUsage(
+    fun toHourUsage(): HourData {
+        return HourData(
             upSpeed,
             downSpeed,
             wifiSpeed,
@@ -168,12 +171,12 @@ data class TrafficSnapshot (
         }
 
         @TypeConverter
-        fun fromHoursMap(hours: MutableMap<Long, HourUsage>): String {
+        fun fromHoursMap(hours: MutableMap<Long, HourData>): String {
             return Json.encodeToString(hours)
         }
 
         @TypeConverter
-        fun toHoursMap(hoursString: String): MutableMap<Long, HourUsage> {
+        fun toHoursMap(hoursString: String): MutableMap<Long, HourData> {
             return Json.decodeFromString(hoursString)
         }
     }

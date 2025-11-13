@@ -174,6 +174,7 @@ class UsageService : Service(), KoinComponent {
     var lastSnapshot: TrafficSnapshot = TrafficSnapshot()
     private suspend fun updateNotification(trafficSnapshot: TrafficSnapshot?) {
         if (lastSnapshot.closeEnough(trafficSnapshot) && !forceUpdate) {
+            forceUpdate = false
             Log.i("UsageService", "Skipped notification update: ${trafficSnapshot?.totalSpeed}")
             return
         }

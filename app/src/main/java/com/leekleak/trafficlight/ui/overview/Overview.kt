@@ -48,6 +48,10 @@ import com.leekleak.trafficlight.charts.model.BarData
 import com.leekleak.trafficlight.database.DayUsage
 import com.leekleak.trafficlight.ui.history.dayUsageToBarData
 import com.leekleak.trafficlight.util.DataSize
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 
 @Composable
 fun Overview(
@@ -61,11 +65,15 @@ fun Overview(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = paddingValues
     ) {
-        Overview(dayUsageToBarData(todayUsage), todayUsage.totalWifi, todayUsage.totalCellular)
+        OverviewTab(
+            dayUsageToBarData(todayUsage.hours.map { (key, value) -> value.toHourUsage() }),
+                todayUsage.totalWifi,
+                todayUsage.totalCellular
+                )
     }
 }
 
-fun LazyListScope.Overview(data: List<BarData>, wifi: Long, cellular: Long) {
+fun LazyListScope.OverviewTab(data: List<BarData>, wifi: Long, cellular: Long) {
     item {
         Text(
             modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),

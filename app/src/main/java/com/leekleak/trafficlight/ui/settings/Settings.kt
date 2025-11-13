@@ -62,7 +62,7 @@ fun Settings(
                     icon = null,
                     onClick = { viewModel.repopulateDB() },
                     controls = {
-                        Text("$dbSize days")
+                        Text("${dbSize/24} days")
                     }
                 )
             }

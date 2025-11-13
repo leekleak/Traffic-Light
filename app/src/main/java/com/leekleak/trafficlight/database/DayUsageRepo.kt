@@ -3,11 +3,10 @@ package com.leekleak.trafficlight.database
 import android.app.usage.NetworkStatsManager
 import android.content.Context
 import android.content.Context.NETWORK_STATS_SERVICE
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
+import android.util.Log
 import com.leekleak.trafficlight.util.NetworkType
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -15,59 +14,54 @@ import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
 class DayUsageRepo(context: Context) {
-    private val dao = DayUsageDatabase.getInstance(context).dayUsageDao()
+    private val daoNew = HourlyUsageDatabase.getInstance(context).hourlyUsageDao()
     private var networkStatsManager: NetworkStatsManager? = null
 
     init {
         networkStatsManager = context.getSystemService(NETWORK_STATS_SERVICE) as NetworkStatsManager?
     }
 
-    fun getDBSize(): Flow<Int> = dao.getDBSize()
+    fun getDBSize(): Flow<Int> = daoNew.getDBSize()
 
-    fun getDayUsage(date: LocalDate): Flow<DayUsage?> = dao.getDayUsage(date)
-    fun getTodayUsage(): Flow<DayUsage?> = dao.getTodayUsage()
+    fun getUsage(startStamp: Long, endStamp: Long): Flow<List<HourUsage>> =
+        daoNew.getUsage(startStamp, endStamp)
 
-    fun updateDayUsage(dayUsage: DayUsage) = dao.updateDayUsage(dayUsage)
-
-    fun dayUsageExists(date: LocalDate) = dao.dayUsageExists(date)
-
-    fun addDayUsage(dayUsage: DayUsage) = dao.addDayUsage(dayUsage)
-
-    fun getAllDayUsagePaged(pageSize: Int = 20): Flow<PagingData<DayUsage>> {
-        return Pager(
-            config = PagingConfig(
-                pageSize = pageSize,
-                enablePlaceholders = false
-            ),
-            pagingSourceFactory = { dao.getAllDayUsagePaging() }
-        ).flow
+    fun getLastDayWithData(): Flow<LocalDate> = daoNew.getLastUsage().map { hourUsage ->
+        Instant.ofEpochMilli(hourUsage?.timestamp ?: 0L)
+            .atZone(ZoneId.systemDefault().rules.getOffset(Instant.now()))
+            .toLocalDate()
     }
 
-    fun getMaxCombinedUsage(): Flow<Long> = dao.getMaxCombinedUsage()
+    fun getMaxCombinedUsage(): Flow<Long> = daoNew.getMaxCombinedUsage()
 
-    fun clearDB() = dao.clear()
+    fun clearDB() = daoNew.clear()
 
     fun populateDb() {
-        val suspiciousDays = mutableListOf<DayUsage>()
+        val suspiciousHours = mutableListOf<HourUsage>()
+        val timezone = ZoneId.systemDefault().rules.getOffset(Instant.now())
+        val date = LocalDate.now().atStartOfDay()
+        val dayStamp = date.truncatedTo(ChronoUnit.DAYS).toInstant(timezone).toEpochMilli()
+
         for (i in 1..10000) {
-            if (suspiciousDays.size == 31) {
-                suspiciousDays.forEach {
-                    dao.deleteDayUsage(it)
+            if (suspiciousHours.size == 31 * 24) {
+                suspiciousHours.forEach {
+                    daoNew.deleteHourUsage(it)
                 }
+                Log.e("leekleak", "Reached maximum amount of empty shit")
                 return
             }
 
-            val date = LocalDate.now().minusDays(i.toLong()).atStartOfDay()
-            if (dao.dayUsageExists(date.toLocalDate())) return
+            val hour = 3_600_000L
+            val currentStamp = dayStamp - (i * hour)
+            val hourUsage = getCurrentHourUsage(currentStamp, currentStamp + hour)
 
-            val dayUsage = calculateDayUsage(date)
-
-            suspiciousDays.add(dayUsage)
-            if (dayUsage.totalWifi + dayUsage.totalCellular != 0L) {
-                for (day in suspiciousDays) {
-                    dao.addDayUsage(day)
+            if (daoNew.hourUsageExists(currentStamp)) return
+            suspiciousHours.add(HourUsage(currentStamp,hourUsage.wifi, hourUsage.cellular))
+            if (hourUsage.total != 0L) {
+                for (hour in suspiciousHours) {
+                    daoNew.addHourUsage(hour)
                 }
-                suspiciousDays.clear()
+                suspiciousHours.clear()
             }
         }
     }
@@ -76,7 +70,7 @@ class DayUsageRepo(context: Context) {
     fun calculateDayUsage(dateTime: LocalDateTime): DayUsage {
         val timezone = ZoneId.systemDefault().rules.getOffset(Instant.now())
         val dayStamp = dateTime.truncatedTo(ChronoUnit.DAYS).toInstant(timezone).toEpochMilli()
-        val hours: MutableMap<Long, HourUsage> = mutableMapOf()
+        val hours: MutableMap<Long, HourData> = mutableMapOf()
 
         for (k in 0..23) {
             val globalHour = dayStamp + k * 3_600_000L
@@ -86,22 +80,22 @@ class DayUsageRepo(context: Context) {
         return DayUsage(dateTime.toLocalDate(), hours).also { it.categorizeUsage() }
     }
 
-    fun getCurrentHourUsage(startTime: Long, endTime: Long): HourUsage {
+    fun getCurrentHourUsage(startTime: Long, endTime: Long): HourData {
         val statsWifi = networkStatsManager?.querySummaryForDevice(NetworkType.Wifi.ordinal, null, startTime, endTime)
         val statsMobile = networkStatsManager?.querySummaryForDevice(NetworkType.Cellular.ordinal, null, startTime, endTime)
 
-        val hourUsage = HourUsage()
+        val hourData = HourData()
         statsMobile?.let {
-            hourUsage.cellular += it.txBytes + it.rxBytes
-            hourUsage.upload += it.txBytes
-            hourUsage.download += it.rxBytes
+            hourData.cellular += it.txBytes + it.rxBytes
+            hourData.upload += it.txBytes
+            hourData.download += it.rxBytes
         }
 
         statsWifi?.let {
-            hourUsage.wifi += it.txBytes + it.rxBytes
-            hourUsage.upload += it.txBytes
-            hourUsage.download += it.rxBytes
+            hourData.wifi += it.txBytes + it.rxBytes
+            hourData.upload += it.txBytes
+            hourData.download += it.rxBytes
         }
-        return hourUsage
+        return hourData
     }
 }

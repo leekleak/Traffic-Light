@@ -96,7 +96,7 @@ fun LazyListScope.OverviewTab(
     val wifi = data.sumOf { it.y2 }.toLong()
     item {
         Text(
-            modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),
+            modifier = Modifier.padding(8.dp),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             text = stringResource(label)

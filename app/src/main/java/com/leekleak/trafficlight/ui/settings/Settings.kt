@@ -29,7 +29,7 @@ fun Settings(
     ) {
     item {
         Text(
-            modifier = Modifier.padding(start = 8.dp),
+            modifier = Modifier.padding(8.dp),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             text = stringResource(R.string.settings)

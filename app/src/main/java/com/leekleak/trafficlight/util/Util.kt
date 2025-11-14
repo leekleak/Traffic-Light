@@ -4,9 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.TextStyle
+import java.util.Locale
 
 enum class NetworkType {
     Cellular,
@@ -36,3 +39,6 @@ fun Int.toDp(): Dp {
 
 fun LocalDate.toTimestamp(): Long =
     atStartOfDay().toInstant(ZoneId.systemDefault().rules.getOffset(Instant.now())).toEpochMilli()
+
+fun DayOfWeek.getName(style: TextStyle) =
+    this.getDisplayName(style, Locale.getDefault()).replaceFirstChar(Char::titlecase)

@@ -51,6 +51,7 @@ import com.leekleak.trafficlight.charts.LineGraph
 import com.leekleak.trafficlight.charts.model.BarData
 import com.leekleak.trafficlight.database.HourUsage
 import com.leekleak.trafficlight.util.SizeFormatter
+import com.leekleak.trafficlight.util.getName
 import com.leekleak.trafficlight.util.padHour
 import java.time.Duration
 import java.time.Instant
@@ -88,7 +89,7 @@ fun Dashboard(viewModel: HistoryVM, paddingValues: PaddingValues) {
 
         item {
             Text(
-                modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),
+                modifier = Modifier.padding(8.dp),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 text = stringResource(R.string.history)
@@ -149,9 +150,7 @@ fun HistoryItem(
                     AnimatedVisibility(selected == i) {
                         Text(
                             modifier = Modifier.width(86.sp.value.dp),
-                            text = date.dayOfWeek
-                                .getDisplayName(TextStyle.FULL_STANDALONE, Locale.getDefault())
-                                .replaceFirstChar(Char::titlecase),
+                            text = date.dayOfWeek.getName(TextStyle.FULL_STANDALONE),
                             autoSize = TextAutoSize.StepBased(8.sp, 18.sp),
                             maxLines = 1,
                             fontFamily = classyFont(),
@@ -262,6 +261,6 @@ fun dayUsageToBarData(hours: List<HourUsage>): List<BarData> {
 fun classyFont(): FontFamily =
     FontFamily(
         Font(
-            R.font.mendl_serif
+            R.font.momo_trust_display
         ),
     )

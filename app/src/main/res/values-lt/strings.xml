@@ -4,6 +4,7 @@
     <string name="notification_permission_description">Leidimas skelbti pranešimus yra reikalingas tam, kad galėtume rodyti interneto greitį viršutinėje juostoje.</string>
     <string name="grant">Suteikti</string>
     <string name="today">Šiandien</string>
+    <string name="this_week">Ši savaitė</string>
     <string name="history">Istorija</string>
     <string name="wifi">Wi-Fi</string>
     <string name="cellular">Mobilieji</string>

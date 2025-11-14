@@ -97,7 +97,7 @@ fun NavigationManager() {
         PaddingValues(
             start = 16.dp,
             end = 16.dp,
-            top = topPadding + 8.dp,
+            top = topPadding,
             bottom = bottomPadding + toolbarOffset
         )
 

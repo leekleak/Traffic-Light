@@ -5,6 +5,7 @@ import com.leekleak.trafficlight.charts.model.BarData
 import com.leekleak.trafficlight.database.DayUsage
 import com.leekleak.trafficlight.database.HourlyUsageRepo
 import com.leekleak.trafficlight.services.UsageService
+import com.leekleak.trafficlight.util.getName
 import com.leekleak.trafficlight.util.padHour
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -27,7 +28,7 @@ class OverviewVM : ViewModel(), KoinComponent {
     fun weekUsage(weekStartStamp: Long, todayStamp: Long, todayUsage: DayUsage): Flow<List<BarData>> =
         hourlyUsageRepo.getUsage(weekStartStamp, todayStamp).map { usageList ->
             val data = MutableList(7) { i ->
-                val x = DayOfWeek.entries[i].getDisplayName(TextStyle.SHORT_STANDALONE, Locale.getDefault())
+                val x = DayOfWeek.entries[i].getName(TextStyle.SHORT_STANDALONE)
                 BarData(x, 0.0, 0.0)
             }
             val todayWeekDay = LocalDate.now().dayOfWeek.value - 1

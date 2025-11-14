@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.leekleak.trafficlight.R
+import com.leekleak.trafficlight.util.WideScreenWrapper
 import com.leekleak.trafficlight.util.categoryTitle
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -50,37 +51,39 @@ fun Permissions(
         )
 
     Scaffold {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = paddingValues
-        ) {
-            categoryTitle(R.string.permissions)
-            item {
-                PermissionCard(
-                    title = stringResource(R.string.notification_permission),
-                    description = stringResource(R.string.notification_permission_description),
-                    enabled = !notifPermission,
-                    onClick = { activity?.let { viewModel.allowNotifications(it) } }
-                )
-            }
-            item {
-                PermissionCard(
-                    title = stringResource(R.string.battery_optimization),
-                    description = stringResource(R.string.battery_optimization_description),
-                    enabled = !backgroundPermission,
-                    onClick = { activity?.let { viewModel.allowBackground(it) } }
-                )
-            }
-            item {
-                PermissionCard(
-                    title = stringResource(R.string.usage_statistics),
-                    description = stringResource(R.string.usage_statistics_description),
-                    enabled = !usagePermission,
-                    onClick = { activity?.let { viewModel.allowUsage(it) } }
-                )
+        WideScreenWrapper {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = paddingValues
+            ) {
+                categoryTitle(R.string.permissions)
+                item {
+                    PermissionCard(
+                        title = stringResource(R.string.notification_permission),
+                        description = stringResource(R.string.notification_permission_description),
+                        enabled = !notifPermission,
+                        onClick = { activity?.let { viewModel.allowNotifications(it) } }
+                    )
+                }
+                item {
+                    PermissionCard(
+                        title = stringResource(R.string.battery_optimization),
+                        description = stringResource(R.string.battery_optimization_description),
+                        enabled = !backgroundPermission,
+                        onClick = { activity?.let { viewModel.allowBackground(it) } }
+                    )
+                }
+                item {
+                    PermissionCard(
+                        title = stringResource(R.string.usage_statistics),
+                        description = stringResource(R.string.usage_statistics_description),
+                        enabled = !usagePermission,
+                        onClick = { activity?.let { viewModel.allowUsage(it) } }
+                    )
+                }
             }
         }
     }

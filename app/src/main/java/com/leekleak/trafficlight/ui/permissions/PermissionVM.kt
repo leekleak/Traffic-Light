@@ -4,15 +4,12 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.provider.Settings
-import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import org.koin.core.component.KoinComponent
 
 class PermissionVM : ViewModel(), KoinComponent {
     fun allowBackground(activity: Activity) {
-        val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)/*.apply {
-            data = ("package:${activity.packageName}").toUri()
-        }*/
+        val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
         activity.startActivity(intent)
     }
 

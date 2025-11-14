@@ -34,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -46,6 +45,7 @@ import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.ui.history.History
 import com.leekleak.trafficlight.ui.overview.Overview
 import com.leekleak.trafficlight.ui.settings.Settings
+import com.leekleak.trafficlight.util.WideScreenWrapper
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
@@ -129,18 +129,20 @@ fun NavigationManager() {
 
         }
     ) {
-        NavDisplay(
-            backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
-            entryProvider = entryProvider {
-                entry<NavKeys.Overview> { Overview(paddingValues) }
-                entry<NavKeys.History> { History(paddingValues) }
-                entry<NavKeys.Settings> { Settings(paddingValues) }
-            },
-            transitionSpec = { fadeIn() togetherWith fadeOut() },
-            popTransitionSpec = { fadeIn() togetherWith fadeOut() },
-            predictivePopTransitionSpec = { fadeIn() togetherWith fadeOut() },
-        )
+        WideScreenWrapper {
+            NavDisplay(
+                backStack = backStack,
+                onBack = { backStack.removeLastOrNull() },
+                entryProvider = entryProvider {
+                    entry<NavKeys.Overview> { Overview(paddingValues) }
+                    entry<NavKeys.History> { History(paddingValues) }
+                    entry<NavKeys.Settings> { Settings(paddingValues) }
+                },
+                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                popTransitionSpec = { fadeIn() togetherWith fadeOut() },
+                predictivePopTransitionSpec = { fadeIn() togetherWith fadeOut() },
+            )
+        }
     }
 }
 

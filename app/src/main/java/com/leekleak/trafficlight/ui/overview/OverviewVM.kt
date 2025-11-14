@@ -6,10 +6,7 @@ import com.leekleak.trafficlight.database.DayUsage
 import com.leekleak.trafficlight.database.HourlyUsageRepo
 import com.leekleak.trafficlight.services.UsageService
 import com.leekleak.trafficlight.util.getName
-import com.leekleak.trafficlight.util.padHour
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -18,8 +15,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.TextStyle
-import java.time.temporal.ChronoUnit
-import java.util.Locale
 
 class OverviewVM : ViewModel(), KoinComponent {
     private val hourlyUsageRepo: HourlyUsageRepo by inject()

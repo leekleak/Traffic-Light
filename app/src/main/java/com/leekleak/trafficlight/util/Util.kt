@@ -1,10 +1,14 @@
 package com.leekleak.trafficlight.util
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -41,11 +45,6 @@ fun padHour(time: Int): String {
     return ""
 }
 
-@Composable
-fun Int.toDp(): Dp {
-    return (this / LocalDensity.current.density).dp
-}
-
 fun LocalDate.toTimestamp(): Long =
     atStartOfDay().toInstant(ZoneId.systemDefault().rules.getOffset(Instant.now())).toEpochMilli()
 
@@ -77,4 +76,16 @@ private fun CategoryTitleSmallText(text: String) {
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.secondary
     )
+}
+
+@Composable
+fun WideScreenWrapper(content: @Composable () -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Box(Modifier.widthIn(20.dp, 500.dp)) {
+            content()
+        }
+    }
 }

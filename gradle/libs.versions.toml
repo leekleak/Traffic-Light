@@ -1,5 +1,5 @@
 [versions]
-agp = "8.11.2"
+agp = "8.13.1"
 coreKtx = "1.17.0"
 activityCompose = "1.11.0"
 composeBom = "2025.11.00"

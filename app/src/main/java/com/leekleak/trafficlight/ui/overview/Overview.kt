@@ -34,12 +34,10 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.leekleak.trafficlight.R
@@ -48,6 +46,7 @@ import com.leekleak.trafficlight.charts.model.BarData
 import com.leekleak.trafficlight.database.DayUsage
 import com.leekleak.trafficlight.ui.history.dayUsageToBarData
 import com.leekleak.trafficlight.util.DataSize
+import com.leekleak.trafficlight.util.categoryTitle
 import com.leekleak.trafficlight.util.toTimestamp
 import java.time.LocalDate
 
@@ -94,14 +93,7 @@ fun LazyListScope.OverviewTab(
 ) {
     val cellular = data.sumOf { it.y1 }.toLong()
     val wifi = data.sumOf { it.y2 }.toLong()
-    item {
-        Text(
-            modifier = Modifier.padding(8.dp),
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            text = stringResource(label)
-        )
-    }
+    categoryTitle(label)
     item {
         Column (verticalArrangement = Arrangement.spacedBy(8.dp)){
             Row(

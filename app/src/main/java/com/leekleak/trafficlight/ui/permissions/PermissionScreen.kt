@@ -25,8 +25,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.leekleak.trafficlight.R
+import com.leekleak.trafficlight.util.categoryTitle
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -57,14 +57,7 @@ fun Permissions(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = paddingValues
         ) {
-            item {
-                Text(
-                    modifier = Modifier.padding(8.dp),
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    text = stringResource(R.string.permissions)
-                )
-            }
+            categoryTitle(R.string.permissions)
             item {
                 PermissionCard(
                     title = stringResource(R.string.notification_permission),

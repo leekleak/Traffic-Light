@@ -1,6 +1,5 @@
 package com.leekleak.trafficlight.ui.history
 
-import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
@@ -41,7 +40,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,6 +49,8 @@ import com.leekleak.trafficlight.charts.LineGraph
 import com.leekleak.trafficlight.charts.model.BarData
 import com.leekleak.trafficlight.database.HourUsage
 import com.leekleak.trafficlight.util.SizeFormatter
+import com.leekleak.trafficlight.util.categoryTitle
+import com.leekleak.trafficlight.util.categoryTitleSmall
 import com.leekleak.trafficlight.util.getName
 import com.leekleak.trafficlight.util.padHour
 import java.time.Duration
@@ -83,24 +83,23 @@ fun Dashboard(viewModel: HistoryVM, paddingValues: PaddingValues) {
 
     LazyColumn(
         modifier = Modifier.background(MaterialTheme.colorScheme.surface).fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = paddingValues
     ) {
-
-        item {
-            Text(
-                modifier = Modifier.padding(8.dp),
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                text = stringResource(R.string.history)
-            )
-        }
-
+        categoryTitle(R.string.history)
+        categoryTitleSmall(LocalDate.now().month.getName(TextStyle.FULL_STANDALONE))
         if (duration.toDays().toInt() > 0) {
-            items(duration.toDays().toInt(), key = { it }) { index ->
-                HistoryItem(viewModel, maxSize.value, index + 1, selected) { i: Int ->
-                    selected = i
-                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+            for (index in 0..<duration.toDays().toInt()) {
+                val day = LocalDate.now().minusDays(index.toLong())
+                if (day.dayOfMonth == 1) {
+                    categoryTitleSmall(day.month.minus(1L).getName(TextStyle.FULL_STANDALONE))
+                }
+                item {
+                    Box (Modifier.padding(bottom = 6.dp)) {
+                        HistoryItem(viewModel, maxSize.value, index + 1, selected) { i: Int ->
+                            selected = i
+                            haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                        }
+                    }
                 }
             }
         }
@@ -126,7 +125,7 @@ fun HistoryItem(
         modifier = Modifier
             .clip(MaterialTheme.shapes.large)
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .padding(4.dp)
+            .padding(start = 4.dp, end = 4.dp)
     ) {
         Box (
             modifier = Modifier
@@ -212,6 +211,10 @@ fun HistoryItem(
                     )
                 }
             }
+        }
+        if (date.dayOfMonth == 1) {
+
+            date.month.getDisplayName(TextStyle.FULL_STANDALONE, Locale.getDefault())
         }
     }
 }

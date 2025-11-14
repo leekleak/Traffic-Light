@@ -1,12 +1,21 @@
 package com.leekleak.trafficlight.util
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
+import java.time.Month
 import java.time.ZoneId
 import java.time.format.TextStyle
 import java.util.Locale
@@ -42,3 +51,30 @@ fun LocalDate.toTimestamp(): Long =
 
 fun DayOfWeek.getName(style: TextStyle) =
     this.getDisplayName(style, Locale.getDefault()).replaceFirstChar(Char::titlecase)
+
+fun Month.getName(style: TextStyle) =
+    this.getDisplayName(style, Locale.getDefault()).replaceFirstChar(Char::titlecase)
+
+fun LazyListScope.categoryTitle(text: Int) {
+    item {
+        Text(
+            modifier = Modifier.padding(8.dp),
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            text = stringResource(text)
+        )
+    }
+}
+
+fun LazyListScope.categoryTitleSmall(text: Int) = item { CategoryTitleSmallText(stringResource(text)) }
+fun LazyListScope.categoryTitleSmall(text: String) = item { CategoryTitleSmallText(text) }
+
+@Composable
+private fun CategoryTitleSmallText(text: String) {
+    Text(
+        modifier = Modifier.padding(8.dp),
+        text = text,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.secondary
+    )
+}

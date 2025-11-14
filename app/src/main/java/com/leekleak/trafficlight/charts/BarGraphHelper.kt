@@ -49,6 +49,7 @@ internal class BarGraphHelper(
     private val scope: DrawScope,
     private val yAxisData: List<Pair<Double, Double>>,
     private val xAxisData: List<String>,
+    private val finalGridPoint: String
 ) {
     private var sizeFormatter = SizeFormatter(false, 0)
     internal val metrics = scope.buildMetrics()
@@ -177,21 +178,22 @@ internal class BarGraphHelper(
                         color = color,
                         style = Fill,
                     )
-                }
-                translate (iconOffset.x, iconOffset.y) {
-                    with(icon) {
-                        draw(
-                            size = iconSize,
-                            alpha = 1.0f,
-                            colorFilter = ColorFilter.tint(iconColor)
-                        )
+
+                    translate (iconOffset.x, iconOffset.y) {
+                        with(icon) {
+                            draw(
+                                size = iconSize,
+                                alpha = 1.0f,
+                                colorFilter = ColorFilter.tint(iconColor)
+                            )
+                        }
                     }
                 }
             }
         }
     }
 
-    internal fun drawTextLabelsOverXAndYAxis(color: Color) {
+    internal fun drawTextLabelsOverXAndYAxis(color: Color, centerLabels: Boolean) {
         scope.run {
             val paint = Paint().apply {
                 this.color = color.toArgb()
@@ -199,8 +201,8 @@ internal class BarGraphHelper(
                 textAlign = Paint.Align.CENTER
                 textSize = 12.sp.toPx()
             }
-            for (i in 0 until metrics.maxPointsSize - 1 step 3) {
-                val xPos = metrics.xItemSpacing * i
+            for (i in 0 until metrics.maxPointsSize - 1) {
+                val xPos = metrics.xItemSpacing * (i + if (centerLabels) 0.5f else 0f)
                 drawContext.canvas.nativeCanvas.drawText(
                     xAxisData[i],
                     xPos,
@@ -210,7 +212,7 @@ internal class BarGraphHelper(
             }
 
             val xPos = (metrics.xItemSpacing * (metrics.maxPointsSize-1))
-            drawContext.canvas.nativeCanvas.drawText("24", xPos, size.height, paint)
+            drawContext.canvas.nativeCanvas.drawText(finalGridPoint, xPos, size.height, paint)
 
             drawLine(
                 start = Offset(xPos, metrics.gridHeight + 12),

@@ -1,14 +1,10 @@
 package com.leekleak.trafficlight.database
 
 import android.net.TrafficStats
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import kotlinx.serialization.Serializable
 import java.time.LocalDate
 
-@Entity
 data class DayUsage(
-    @PrimaryKey val date: LocalDate = LocalDate.now(),
+    val date: LocalDate = LocalDate.now(),
     val hours: MutableMap<Long, HourData> = mutableMapOf(),
     var totalWifi: Long = 0,
     var totalCellular: Long = 0,
@@ -19,7 +15,6 @@ data class DayUsage(
     }
 }
 
-@Serializable
 data class HourData(
     var upload: Long = 0,
     var download: Long = 0,

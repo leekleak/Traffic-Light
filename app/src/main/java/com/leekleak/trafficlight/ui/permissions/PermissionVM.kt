@@ -10,9 +10,9 @@ import org.koin.core.component.KoinComponent
 
 class PermissionVM : ViewModel(), KoinComponent {
     fun allowBackground(activity: Activity) {
-        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+        val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)/*.apply {
             data = ("package:${activity.packageName}").toUri()
-        }
+        }*/
         activity.startActivity(intent)
     }
 

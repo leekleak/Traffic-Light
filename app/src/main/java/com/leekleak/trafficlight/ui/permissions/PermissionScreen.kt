@@ -54,7 +54,7 @@ fun Permissions(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface),
-            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Bottom),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = paddingValues
         ) {
             item {

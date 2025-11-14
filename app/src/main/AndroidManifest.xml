@@ -41,7 +41,7 @@
         <receiver android:name=".services.DismissListener"
             android:exported="false">
         </receiver>
-        <receiver android:name=".services.Autostarter"
+        <receiver android:name=".services.AutoStarter"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

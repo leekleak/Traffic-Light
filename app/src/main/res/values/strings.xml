@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Traffic Light</string>
     <string name="today">Today</string>
+    <string name="this_week">This Week</string>
     <string name="history">History</string>
     <string name="wifi">Wi-Fi</string>
     <string name="cellular">Cellular</string>

@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import com.leekleak.trafficlight.util.hasAllPermissions
 
-class Autostarter : BroadcastReceiver()
+class AutoStarter : BroadcastReceiver()
 {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent?.action == Intent.ACTION_BOOT_COMPLETED) {

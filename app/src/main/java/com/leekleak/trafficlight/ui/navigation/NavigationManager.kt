@@ -1,6 +1,7 @@
 package com.leekleak.trafficlight.ui.navigation
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -24,12 +25,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -41,6 +46,7 @@ import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.ui.history.History
 import com.leekleak.trafficlight.ui.overview.Overview
 import com.leekleak.trafficlight.ui.settings.Settings
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 
@@ -101,7 +107,7 @@ fun NavigationManager() {
             Box(
                 modifier = Modifier.fillMaxWidth()
                     .navigationBarsPadding()
-                    .padding(2.dp),
+                    .padding(8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 HorizontalFloatingToolbar(
@@ -142,7 +148,10 @@ fun NavigationManager() {
 @Composable
 fun NavigationButton(currentBackstack: NavKeys, route: NavKeys, icon: Int, onClick: () -> Unit) {
     val haptic = LocalHapticFeedback.current
+    val animation = remember { Animatable(1f) }
+    val scope = rememberCoroutineScope()
     IconButton(
+        modifier = Modifier.scale(animation.value),
         colors =
             if (currentBackstack == route){
                 IconButtonDefaults.filledIconButtonColors()
@@ -152,6 +161,10 @@ fun NavigationButton(currentBackstack: NavKeys, route: NavKeys, icon: Int, onCli
         onClick = {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             onClick()
+            scope.launch {
+                animation.snapTo(0.9f)
+                animation.animateTo(1f)
+            }
         }
     ) {
         Icon(

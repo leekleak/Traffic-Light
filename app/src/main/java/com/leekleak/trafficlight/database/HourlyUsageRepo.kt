@@ -27,9 +27,11 @@ class HourlyUsageRepo(context: Context) {
         dao.getUsage(startStamp, endStamp)
 
     fun getLastDayWithData(): Flow<LocalDate> = dao.getLastUsage().map { hourUsage ->
-        Instant.ofEpochMilli(hourUsage?.timestamp ?: 0L)
-            .atZone(ZoneId.systemDefault().rules.getOffset(Instant.now()))
-            .toLocalDate()
+        hourUsage?.let {
+            Instant.ofEpochMilli(it.timestamp)
+                .atZone(ZoneId.systemDefault().rules.getOffset(Instant.now()))
+                .toLocalDate()
+        } ?: LocalDate.now()
     }
 
     fun getMaxCombinedUsage(): Flow<Long> = dao.getMaxCombinedUsage()

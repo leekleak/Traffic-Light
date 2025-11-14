@@ -24,17 +24,22 @@ import com.leekleak.trafficlight.charts.model.BarData
 import com.leekleak.trafficlight.util.px
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlin.Boolean
 
 
 @Composable
 fun BarGraph(
     modifier: Modifier = Modifier,
     data: List<BarData>,
+    finalGridPoint: String = "24",
+    centerLabels: Boolean = false
 ) {
     BarGraphImpl(
         modifier = modifier,
         xAxisData = data.map { it.x },
         yAxisData = data.map { Pair(it.y1, it.y2) },
+        finalGridPoint = finalGridPoint,
+        centerLabels = centerLabels
     )
 }
 
@@ -44,6 +49,8 @@ private fun BarGraphImpl(
     modifier: Modifier,
     xAxisData: List<String>,
     yAxisData: List<Pair<Double, Double>>,
+    finalGridPoint: String,
+    centerLabels: Boolean
 ) {
     val scope = rememberCoroutineScope()
     val vibrator = LocalContext.current.getSystemService(Vibrator::class.java)
@@ -139,7 +146,8 @@ private fun BarGraphImpl(
         val barGraphHelper = BarGraphHelper(
             scope = this,
             yAxisData = yAxisData,
-            xAxisData = xAxisData
+            xAxisData = xAxisData,
+            finalGridPoint = finalGridPoint
         )
 
         barOffset.clear()
@@ -172,7 +180,7 @@ private fun BarGraphImpl(
             cellularAnimation.value,
         )
 
-        barGraphHelper.drawTextLabelsOverXAndYAxis(gridColor)
+        barGraphHelper.drawTextLabelsOverXAndYAxis(gridColor, centerLabels)
         barGraphHelper.drawBars(cornerRadius, primaryColor, secondaryColor, barAnimation)
     }
 }

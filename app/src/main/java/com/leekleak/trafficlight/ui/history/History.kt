@@ -95,7 +95,6 @@ fun Dashboard(viewModel: HistoryVM, paddingValues: PaddingValues) {
             )
         }
 
-        Log.e("leekleak", duration.toDays().toString())
         if (duration.toDays().toInt() > 0) {
             items(duration.toDays().toInt(), key = { it }) { index ->
                 HistoryItem(viewModel, maxSize.value, index + 1, selected) { i: Int ->
@@ -210,7 +209,7 @@ fun HistoryItem(
                         modifier = Modifier
                             .padding(top = 24.dp, start = 24.dp, bottom = 16.dp)
                             .height(150.dp),
-                        data = dayUsageToBarData(usage)
+                        data = dayUsageToBarData(usage),
                     )
                 }
             }

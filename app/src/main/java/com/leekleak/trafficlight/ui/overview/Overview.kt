@@ -48,6 +48,8 @@ import com.leekleak.trafficlight.charts.model.BarData
 import com.leekleak.trafficlight.database.DayUsage
 import com.leekleak.trafficlight.ui.history.dayUsageToBarData
 import com.leekleak.trafficlight.util.DataSize
+import com.leekleak.trafficlight.util.toTimestamp
+import java.time.LocalDate
 
 @Composable
 fun Overview(
@@ -55,6 +57,13 @@ fun Overview(
 ) {
     val viewModel = OverviewVM()
     val todayUsage by viewModel.todayUsage.collectAsState(DayUsage())
+    val today = LocalDate.now()
+    val weekStart = today.minusDays(today.dayOfWeek.value - 1L)
+    val weeklyUsage by viewModel.weekUsage(
+        weekStart.toTimestamp(),
+        today.toTimestamp(),
+        todayUsage
+    ).collectAsState(listOf())
 
     LazyColumn(
         modifier = Modifier.background(MaterialTheme.colorScheme.surface).fillMaxSize(),
@@ -62,20 +71,35 @@ fun Overview(
         contentPadding = paddingValues
     ) {
         OverviewTab(
-            dayUsageToBarData(todayUsage.hours.map { (_, value) -> value.toHourUsage() }),
-                todayUsage.totalWifi,
-                todayUsage.totalCellular
-                )
+            label = R.string.today,
+            data = dayUsageToBarData(todayUsage.hours.map { (_, value) -> value.toHourUsage() }),
+        )
+
+        if (weeklyUsage.isNotEmpty()) {
+            OverviewTab(
+                label = R.string.this_week,
+                data = weeklyUsage,
+                finalGridPoint = "",
+                centerLabels = true
+            )
+        }
     }
 }
 
-fun LazyListScope.OverviewTab(data: List<BarData>, wifi: Long, cellular: Long) {
+fun LazyListScope.OverviewTab(
+    label: Int,
+    data: List<BarData>,
+    finalGridPoint: String = "24",
+    centerLabels: Boolean = false
+) {
+    val cellular = data.sumOf { it.y1 }.toLong()
+    val wifi = data.sumOf { it.y2 }.toLong()
     item {
         Text(
             modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            text = stringResource(R.string.today)
+            text = stringResource(label)
         )
     }
     item {
@@ -110,7 +134,9 @@ fun LazyListScope.OverviewTab(data: List<BarData>, wifi: Long, cellular: Long) {
                         modifier = Modifier
                             .padding(top = 24.dp, start = 24.dp, bottom = 16.dp)
                             .height(150.dp),
-                        data = data
+                        data = data,
+                        finalGridPoint = finalGridPoint,
+                        centerLabels = centerLabels
                     )
                 }
             }

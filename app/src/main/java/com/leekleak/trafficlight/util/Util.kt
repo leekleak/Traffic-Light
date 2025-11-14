@@ -4,6 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 
 enum class NetworkType {
     Cellular,
@@ -30,3 +33,6 @@ fun padHour(time: Int): String {
 fun Int.toDp(): Dp {
     return (this / LocalDensity.current.density).dp
 }
+
+fun LocalDate.toTimestamp(): Long =
+    atStartOfDay().toInstant(ZoneId.systemDefault().rules.getOffset(Instant.now())).toEpochMilli()

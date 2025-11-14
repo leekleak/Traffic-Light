@@ -1,17 +1,9 @@
 package com.leekleak.trafficlight.database
 
 import android.net.TrafficStats
-import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Entity
-import androidx.room.Insert
 import androidx.room.PrimaryKey
-import androidx.room.Query
-import androidx.room.TypeConverter
-import androidx.room.Update
-import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import java.time.LocalDate
 
 @Entity
@@ -25,36 +17,6 @@ data class DayUsage(
         totalWifi = hours.map { it.value.wifi }.sum()
         totalCellular = hours.map { it.value.cellular }.sum()
     }
-}
-
-@Dao
-interface DayUsageDao {
-    @Query("Select * From DayUsage Where date = :date")
-    fun getDayUsage(date: LocalDate): Flow<DayUsage?>
-
-    @Query("Select * From DayUsage Where date = date('now', 'localtime')")
-    fun getTodayUsage(): Flow<DayUsage?>
-
-    @Query("SELECT EXISTS(SELECT * FROM DayUsage WHERE date = :date)")
-    fun dayUsageExists(date: LocalDate): Boolean
-
-    @Insert
-    fun addDayUsage(dayUsage: DayUsage)
-
-    @Update
-    fun updateDayUsage(dayUsage: DayUsage)
-
-    @Delete
-    fun deleteDayUsage(dayUsage: DayUsage)
-
-    @Query("SELECT COUNT(*) FROM DayUsage")
-    fun getDBSize(): Flow<Int>
-
-    @Query("DELETE FROM DayUsage")
-    fun clear()
-
-    @Query("SELECT MAX(totalWifi + totalCellular) FROM DayUsage")
-    fun getMaxCombinedUsage(): Flow<Long>
 }
 
 @Serializable
@@ -117,13 +79,6 @@ data class TrafficSnapshot (
         lastWifi = currentWifi
     }
 
-    private fun setLastAsCurrent() {
-        currentDown = lastDown
-        currentUp = lastUp
-        currentMobile = lastMobile
-        currentWifi = lastWifi
-    }
-
     fun updateSnapshot() {
         setCurrentAsLast()
         currentDown = TrafficStats.getTotalRxBytes()
@@ -143,41 +98,10 @@ data class TrafficSnapshot (
         }
     }
 
-    fun toHourUsage(): HourData {
-        return HourData(
-            upSpeed,
-            downSpeed,
-            wifiSpeed,
-            mobileSpeed
-        )
-    }
-
     fun closeEnough(other: TrafficSnapshot?): Boolean {
         return other?.let {
             totalSpeed == it.totalSpeed ||
             (totalSpeed  in 1..1023 && it.totalSpeed in 1..1023)
         } ?: false
-    }
-
-    object Converters {
-        @TypeConverter
-        fun fromLocalDate(date: LocalDate?): String? {
-            return date?.toString()
-        }
-
-        @TypeConverter
-        fun toLocalDate(value: String?): LocalDate? {
-            return if (value == null) null else LocalDate.parse(value)
-        }
-
-        @TypeConverter
-        fun fromHoursMap(hours: MutableMap<Long, HourData>): String {
-            return Json.encodeToString(hours)
-        }
-
-        @TypeConverter
-        fun toHoursMap(hoursString: String): MutableMap<Long, HourData> {
-            return Json.decodeFromString(hoursString)
-        }
     }
 }

@@ -20,8 +20,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -51,14 +49,12 @@ import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.charts.BarGraph
 import com.leekleak.trafficlight.charts.LineGraph
 import com.leekleak.trafficlight.charts.model.BarData
-import com.leekleak.trafficlight.database.DayUsage
 import com.leekleak.trafficlight.database.HourUsage
 import com.leekleak.trafficlight.util.SizeFormatter
 import com.leekleak.trafficlight.util.padHour
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.TextStyle
 import java.time.temporal.ChronoUnit
@@ -102,10 +98,10 @@ fun Dashboard(viewModel: HistoryVM, paddingValues: PaddingValues) {
         Log.e("leekleak", duration.toDays().toString())
         if (duration.toDays().toInt() > 0) {
             items(duration.toDays().toInt(), key = { it }) { index ->
-                HistoryItem(viewModel, maxSize.value, index, selected, { i: Int ->
+                HistoryItem(viewModel, maxSize.value, index + 1, selected) { i: Int ->
                     selected = i
                     haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                })
+                }
             }
         }
     }

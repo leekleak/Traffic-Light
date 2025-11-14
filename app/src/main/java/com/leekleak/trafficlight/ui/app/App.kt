@@ -8,7 +8,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.leekleak.trafficlight.database.DayUsageRepo
 import com.leekleak.trafficlight.services.UsageService
 import com.leekleak.trafficlight.ui.navigation.NavigationManager
 import com.leekleak.trafficlight.ui.permissions.Permissions

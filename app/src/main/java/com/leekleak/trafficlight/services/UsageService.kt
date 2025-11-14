@@ -22,7 +22,7 @@ import androidx.core.graphics.drawable.IconCompat
 import com.leekleak.trafficlight.MainActivity
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.database.DayUsage
-import com.leekleak.trafficlight.database.DayUsageRepo
+import com.leekleak.trafficlight.database.HourlyUsageRepo
 import com.leekleak.trafficlight.database.TrafficSnapshot
 import com.leekleak.trafficlight.model.PreferenceRepo
 import com.leekleak.trafficlight.util.SizeFormatter
@@ -49,7 +49,7 @@ class UsageService : Service(), KoinComponent {
     private val serviceScope = CoroutineScope(Dispatchers.IO)
     private var job: Job? = null
 
-    private val dayUsageRepo: DayUsageRepo by inject()
+    private val hourlyUsageRepo: HourlyUsageRepo by inject()
     private val preferenceRepo: PreferenceRepo by inject()
     private var notificationManager: NotificationManager? = null
 
@@ -115,7 +115,7 @@ class UsageService : Service(), KoinComponent {
         if (job == null) {
             startJob()
 
-            todayUsage = dayUsageRepo.calculateDayUsage(LocalDate.now())
+            todayUsage = hourlyUsageRepo.calculateDayUsage(LocalDate.now())
             notificationBuilder
                 .setContentIntent(
                     PendingIntent.getActivity(
@@ -166,7 +166,7 @@ class UsageService : Service(), KoinComponent {
         val stamp = dateTime.truncatedTo(ChronoUnit.HOURS).toInstant(timezone).toEpochMilli()
         val stampNow = dateTime.toInstant(timezone).toEpochMilli()
 
-        todayUsage.hours[stamp] = dayUsageRepo.getCurrentHourUsage(stamp, stampNow)
+        todayUsage.hours[stamp] = hourlyUsageRepo.getCurrentHourUsage(stamp, stampNow)
         todayUsage.categorizeUsage()
     }
 

@@ -48,10 +48,6 @@ import com.leekleak.trafficlight.charts.model.BarData
 import com.leekleak.trafficlight.database.DayUsage
 import com.leekleak.trafficlight.ui.history.dayUsageToBarData
 import com.leekleak.trafficlight.util.DataSize
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.temporal.ChronoUnit
 
 @Composable
 fun Overview(
@@ -66,7 +62,7 @@ fun Overview(
         contentPadding = paddingValues
     ) {
         OverviewTab(
-            dayUsageToBarData(todayUsage.hours.map { (key, value) -> value.toHourUsage() }),
+            dayUsageToBarData(todayUsage.hours.map { (_, value) -> value.toHourUsage() }),
                 todayUsage.totalWifi,
                 todayUsage.totalCellular
                 )

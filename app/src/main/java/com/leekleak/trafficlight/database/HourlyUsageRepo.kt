@@ -13,28 +13,28 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
-class DayUsageRepo(context: Context) {
-    private val daoNew = HourlyUsageDatabase.getInstance(context).hourlyUsageDao()
+class HourlyUsageRepo(context: Context) {
+    private val dao = HourlyUsageDatabase.getInstance(context).hourlyUsageDao()
     private var networkStatsManager: NetworkStatsManager? = null
 
     init {
         networkStatsManager = context.getSystemService(NETWORK_STATS_SERVICE) as NetworkStatsManager?
     }
 
-    fun getDBSize(): Flow<Int> = daoNew.getDBSize()
+    fun getDBSize(): Flow<Int> = dao.getDBSize()
 
     fun getUsage(startStamp: Long, endStamp: Long): Flow<List<HourUsage>> =
-        daoNew.getUsage(startStamp, endStamp)
+        dao.getUsage(startStamp, endStamp)
 
-    fun getLastDayWithData(): Flow<LocalDate> = daoNew.getLastUsage().map { hourUsage ->
+    fun getLastDayWithData(): Flow<LocalDate> = dao.getLastUsage().map { hourUsage ->
         Instant.ofEpochMilli(hourUsage?.timestamp ?: 0L)
             .atZone(ZoneId.systemDefault().rules.getOffset(Instant.now()))
             .toLocalDate()
     }
 
-    fun getMaxCombinedUsage(): Flow<Long> = daoNew.getMaxCombinedUsage()
+    fun getMaxCombinedUsage(): Flow<Long> = dao.getMaxCombinedUsage()
 
-    fun clearDB() = daoNew.clear()
+    fun clearDB() = dao.clear()
 
     fun populateDb() {
         val suspiciousHours = mutableListOf<HourUsage>()
@@ -45,7 +45,7 @@ class DayUsageRepo(context: Context) {
         for (i in 1..10000) {
             if (suspiciousHours.size == 31 * 24) {
                 suspiciousHours.forEach {
-                    daoNew.deleteHourUsage(it)
+                    dao.deleteHourUsage(it)
                 }
                 Log.e("leekleak", "Reached maximum amount of empty shit")
                 return
@@ -55,11 +55,11 @@ class DayUsageRepo(context: Context) {
             val currentStamp = dayStamp - (i * hour)
             val hourUsage = getCurrentHourUsage(currentStamp, currentStamp + hour)
 
-            if (daoNew.hourUsageExists(currentStamp)) return
+            if (dao.hourUsageExists(currentStamp)) return
             suspiciousHours.add(HourUsage(currentStamp,hourUsage.wifi, hourUsage.cellular))
             if (hourUsage.total != 0L) {
                 for (hour in suspiciousHours) {
-                    daoNew.addHourUsage(hour)
+                    dao.addHourUsage(hour)
                 }
                 suspiciousHours.clear()
             }

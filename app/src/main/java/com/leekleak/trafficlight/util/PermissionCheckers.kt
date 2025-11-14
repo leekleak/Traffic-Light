@@ -5,9 +5,9 @@ import android.app.AppOpsManager
 import android.content.Context
 import android.content.Context.POWER_SERVICE
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.PowerManager
 import android.os.Process.myUid
-import androidx.core.content.PermissionChecker.PERMISSION_GRANTED
 
 
 fun hasAllPermissions(context: Context): Boolean {
@@ -32,5 +32,9 @@ fun hasUsageStatsPermission(context: Context): Boolean {
 }
 
 fun hasNotificationPermission(context: Context): Boolean {
-    return context.checkSelfPermission(POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        context.checkSelfPermission(POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+    } else {
+        true
+    }
 }

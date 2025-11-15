@@ -1,5 +1,6 @@
 package com.leekleak.trafficlight.ui.settings
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.util.categoryTitle
@@ -19,6 +21,7 @@ fun Settings(
     paddingValues: PaddingValues
 ) {
     val viewModel = SettingsVM()
+    val activity = LocalActivity.current
     LazyColumn(
         Modifier.background(MaterialTheme.colorScheme.surface),
         contentPadding = paddingValues
@@ -30,7 +33,7 @@ fun Settings(
             SwitchPreference(
                 title = stringResource(R.string.screen_off_update),
                 summary = stringResource(R.string.screen_off_update_description),
-                icon = null,
+                icon = painterResource(R.drawable.aod),
                 value = modeAOD,
                 onValueChanged = { viewModel.setModeAOD(it) }
             )
@@ -38,7 +41,7 @@ fun Settings(
             SwitchPreference(
                 title = stringResource(R.string.oversample_icon),
                 summary = stringResource(R.string.oversample_icon_description),
-                icon = null,
+                icon = painterResource(R.drawable.oversample),
                 value = bigIcon,
                 onValueChanged = { viewModel.setBigIcon(it) }
             )
@@ -49,11 +52,20 @@ fun Settings(
             Preference(
                 title = "Clear History",
                 summary = null,
-                icon = null,
+                icon = painterResource(R.drawable.clear_history),
                 onClick = { viewModel.clearDB() },
                 controls = {
                     Text("${dbSize/24} days")
                 }
+            )
+        }
+        categoryTitleSmall("About")
+        PreferenceCategory {
+            Preference(
+                title = "Github",
+                summary = null,
+                icon = painterResource(R.drawable.github),
+                onClick = { viewModel.openGithub(activity) },
             )
         }
     }

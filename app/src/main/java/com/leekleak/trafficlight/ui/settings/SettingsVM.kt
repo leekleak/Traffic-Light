@@ -1,5 +1,8 @@
 package com.leekleak.trafficlight.ui.settings
 
+import android.app.Activity
+import android.content.Intent
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.leekleak.trafficlight.database.HourlyUsageRepo
@@ -29,5 +32,13 @@ class SettingsVM : ViewModel(), KoinComponent {
         viewModelScope.launch(Dispatchers.IO) {
             hourlyUsageRepo.clearDB()
         }
+    }
+
+    fun openGithub(activity: Activity?) {
+        val urlIntent = Intent(
+            Intent.ACTION_VIEW,
+            "https://github.com/leekleak/traffic-light".toUri()
+        )
+        activity?.startActivity(urlIntent)
     }
 }

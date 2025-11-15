@@ -5,7 +5,7 @@
 
 ## Downloads
 
-| [<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80">](https://f-droid.org/en/packages/com.leekleak.trafficlight/) | [<img alt='Get it on GitHub' height="80" src='branding/badge_github.png'>](https://github.com/patzly/tack-android/releases) |
+| [<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80">](https://f-droid.org/en/packages/com.leekleak.trafficlight/) | [<img alt='Get it on GitHub' height="80" src='branding/badge_github.png'>](https://github.com/leekleak/traffic-light/releases) |
 | --- | --- |
 
 ## Screenshots

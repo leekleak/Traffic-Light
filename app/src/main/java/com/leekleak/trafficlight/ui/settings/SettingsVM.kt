@@ -25,10 +25,9 @@ class SettingsVM : ViewModel(), KoinComponent {
     fun setBigIcon(enabled: Boolean) = preferenceRepo.setBigIcon(enabled)
 
     val dbSize = hourlyUsageRepo.getDBSize().stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
-    fun repopulateDB() {
+    fun clearDB() {
         viewModelScope.launch(Dispatchers.IO) {
             hourlyUsageRepo.clearDB()
-            hourlyUsageRepo.populateDb()
         }
     }
 }

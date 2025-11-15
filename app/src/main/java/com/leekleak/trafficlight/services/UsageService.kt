@@ -150,6 +150,7 @@ class UsageService : Service(), KoinComponent {
             var nextTick = System.nanoTime()
             while (true) {
                 trafficSnapshot.updateSnapshot()
+                hourlyUsageRepo.populateDb()
                 if (screenOn || preferenceRepo.modeAOD.first()) launch { updateNotification(trafficSnapshot) }
                 launch { updateDatabase() }
 
@@ -161,16 +162,21 @@ class UsageService : Service(), KoinComponent {
 
     private fun updateDatabase() {
         val dateTime = LocalDateTime.now()
-        val timezone = ZoneId.systemDefault().rules.getOffset(Instant.now())
 
-        val stamp = dateTime.truncatedTo(ChronoUnit.HOURS).toInstant(timezone).toEpochMilli()
-        val stampNow = dateTime.toInstant(timezone).toEpochMilli()
+        if (todayUsage.date != LocalDate.now()) {
+            todayUsage = hourlyUsageRepo.calculateDayUsage(LocalDate.now())
+        } else {
+            val timezone = ZoneId.systemDefault().rules.getOffset(Instant.now())
 
-        todayUsage = todayUsage.copy(
-            hours = todayUsage.hours.toMutableMap().apply {
-                this[stamp] = hourlyUsageRepo.getCurrentHourUsage(stamp, stampNow)
-            }
-        ).also { it.categorizeUsage() }
+            val stamp = dateTime.truncatedTo(ChronoUnit.HOURS).toInstant(timezone).toEpochMilli()
+            val stampNow = dateTime.toInstant(timezone).toEpochMilli()
+
+            todayUsage = todayUsage.copy(
+                hours = todayUsage.hours.toMutableMap().apply {
+                    this[stamp] = hourlyUsageRepo.getCurrentHourUsage(stamp, stampNow)
+                }
+            ).also { it.categorizeUsage() }
+        }
     }
 
     var forceUpdate = false

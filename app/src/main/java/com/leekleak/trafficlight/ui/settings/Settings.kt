@@ -47,10 +47,10 @@ fun Settings(
         PreferenceCategory {
             val dbSize by viewModel.dbSize.collectAsState()
             Preference(
-                title = "Repopulate History",
+                title = "Clear History",
                 summary = null,
                 icon = null,
-                onClick = { viewModel.repopulateDB() },
+                onClick = { viewModel.clearDB() },
                 controls = {
                     Text("${dbSize/24} days")
                 }

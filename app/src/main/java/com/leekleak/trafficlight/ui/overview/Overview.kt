@@ -48,7 +48,6 @@ import com.leekleak.trafficlight.ui.history.dayUsageToBarData
 import com.leekleak.trafficlight.util.DataSize
 import com.leekleak.trafficlight.util.categoryTitle
 import com.leekleak.trafficlight.util.toTimestamp
-import java.time.LocalDate
 
 @Composable
 fun Overview(
@@ -56,7 +55,7 @@ fun Overview(
 ) {
     val viewModel = OverviewVM()
     val todayUsage by viewModel.todayUsage.collectAsState(DayUsage())
-    val today = LocalDate.now()
+    val today = todayUsage.date
     val weekStart = today.minusDays(today.dayOfWeek.value - 1L)
     val weeklyUsage by viewModel.weekUsage(
         weekStart.toTimestamp(),

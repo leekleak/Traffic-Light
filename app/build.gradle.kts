@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "com.leekleak.trafficlight"
-        minSdk = 28
+        minSdk = 26
         targetSdk = 36
         versionCode = 3
         versionName = "1.1.0"

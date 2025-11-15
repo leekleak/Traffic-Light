@@ -166,8 +166,11 @@ class UsageService : Service(), KoinComponent {
         val stamp = dateTime.truncatedTo(ChronoUnit.HOURS).toInstant(timezone).toEpochMilli()
         val stampNow = dateTime.toInstant(timezone).toEpochMilli()
 
-        todayUsage.hours[stamp] = hourlyUsageRepo.getCurrentHourUsage(stamp, stampNow)
-        todayUsage.categorizeUsage()
+        todayUsage = todayUsage.copy(
+            hours = todayUsage.hours.toMutableMap().apply {
+                this[stamp] = hourlyUsageRepo.getCurrentHourUsage(stamp, stampNow)
+            }
+        ).also { it.categorizeUsage() }
     }
 
     var forceUpdate = false

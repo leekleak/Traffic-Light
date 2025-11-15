@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
@@ -68,10 +67,9 @@ class HourlyUsageRepo(context: Context) {
         }
     }
 
-    fun calculateDayUsage(date: LocalDate): DayUsage = calculateDayUsage(date.atStartOfDay())
-    fun calculateDayUsage(dateTime: LocalDateTime): DayUsage {
+    fun calculateDayUsage(date: LocalDate): DayUsage {
         val timezone = ZoneId.systemDefault().rules.getOffset(Instant.now())
-        val dayStamp = dateTime.truncatedTo(ChronoUnit.DAYS).toInstant(timezone).toEpochMilli()
+        val dayStamp = date.atStartOfDay().truncatedTo(ChronoUnit.DAYS).toInstant(timezone).toEpochMilli()
         val hours: MutableMap<Long, HourData> = mutableMapOf()
 
         for (k in 0..23) {
@@ -79,7 +77,7 @@ class HourlyUsageRepo(context: Context) {
             hours[globalHour] = getCurrentHourUsage(globalHour, globalHour + 3_600_000L)
         }
 
-        return DayUsage(dateTime.toLocalDate(), hours).also { it.categorizeUsage() }
+        return DayUsage(date, hours).also { it.categorizeUsage() }
     }
 
     fun getCurrentHourUsage(startTime: Long, endTime: Long): HourData {

@@ -21,4 +21,9 @@
     <string name="screen_off_update_description">Leidžia sekti duomenų naudojimą \"AOD\" režime</string>
     <string name="oversample_icon">Paaštrinti ikoną</string>
     <string name="oversample_icon_description">Padeda išspręsti išsiliejusią ikoną.</string>
+    <string name="wi_fi">Wi-Fi: %1$s</string>
+    <string name="mobile">Mobilieji: %1$s</string>
+    <string name="clear_history">Išvalyti istoriją</string>
+    <string name="about">Apie</string>
+    <string name="days">%1$d dienos</string>
 </resources>

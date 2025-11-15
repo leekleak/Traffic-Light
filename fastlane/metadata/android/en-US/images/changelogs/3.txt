@@ -1,0 +1,20 @@
+Overview:
+- Added weekly overview
+
+History:
+- Improve readability
+- Improve data reliability
+- Many small UI tweaks
+
+Settings:
+- Added option to show network speed on AOD
+- Added option to oversample icon
+
+Other:
+- Added requirements for 2 additional permissions
+    - Usage (for network usage history)
+    - Disable battery optimization
+- Resolved timezone issues
+- Resolved incorrect cumulative data metrics
+- Resolved display issues on displays with a large content scale and tablets
+- Several other minor changes

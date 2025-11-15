@@ -17,7 +17,7 @@ android {
         minSdk = 26
         targetSdk = 36
         versionCode = 3
-        versionName = "1.1.0"
+        versionName = "2.0"
         base.archivesName = "$namespace-$versionName"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

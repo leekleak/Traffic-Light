@@ -20,4 +20,10 @@
     <string name="screen_off_update_description">Allows tracking on the AOD, but impacts battery.</string>
     <string name="oversample_icon">Oversample Icon</string>
     <string name="oversample_icon_description">Render the icon at a larger resolution if it\'s blurry.</string>
+    <string name="wi_fi">Wi-Fi: %1$s</string>
+    <string name="mobile">Mobile: %1$s</string>
+    <string name="clear_history">Clear History</string>
+    <string name="about">About</string>
+    <string name="github" translatable="false">Github</string>
+    <string name="days">%1$d days</string>
 </resources>

@@ -197,19 +197,13 @@ class UsageService : Service(), KoinComponent {
         val title = getString(R.string.speed, speedFormatter.format(snapshot.totalSpeed))
         val spacing = 18
         val messageShort =
-            "Wi-Fi: ${sizeFormatter.format(todayUsage.totalWifi)}".clipAndPad(spacing) +
-            "Mobile: ${sizeFormatter.format(todayUsage.totalCellular)}"
-        val message =
-            "Wi-Fi: ${sizeFormatter.format(todayUsage.totalWifi)}\n" +
-            "Mobile: ${sizeFormatter.format(todayUsage.totalCellular)}\n" +
-            "Down: ${speedFormatter.format(snapshot.downSpeed)}\n" +
-            "Up: ${speedFormatter.format(snapshot.upSpeed)}\n"
+            getString(R.string.wi_fi, sizeFormatter.format(todayUsage.totalWifi)).clipAndPad(spacing) +
+            getString(R.string.mobile, sizeFormatter.format(todayUsage.totalCellular))
 
         notification = notificationBuilder
             .setSmallIcon(createIcon(snapshot))
             .setContentTitle(title)
             .setContentText(messageShort)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
             .build()
         notification?.flags = Notification.FLAG_ONGOING_EVENT or Notification.FLAG_NO_CLEAR
         notificationManager?.notify(NOTIFICATION_ID, notification)

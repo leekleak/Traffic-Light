@@ -50,19 +50,19 @@ fun Settings(
         PreferenceCategory {
             val dbSize by viewModel.dbSize.collectAsState()
             Preference(
-                title = "Clear History",
+                title = stringResource(R.string.clear_history),
                 summary = null,
                 icon = painterResource(R.drawable.clear_history),
                 onClick = { viewModel.clearDB() },
                 controls = {
-                    Text("${dbSize/24} days")
+                    Text(stringResource(R.string.days, dbSize / 24))
                 }
             )
         }
-        categoryTitleSmall("About")
+        categoryTitleSmall(R.string.about)
         PreferenceCategory {
             Preference(
-                title = "Github",
+                title = stringResource(R.string.github),
                 summary = null,
                 icon = painterResource(R.drawable.github),
                 onClick = { viewModel.openGithub(activity) },

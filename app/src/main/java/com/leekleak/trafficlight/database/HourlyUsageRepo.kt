@@ -45,10 +45,7 @@ class HourlyUsageRepo(context: Context) {
 
         for (i in 1..10000) {
             if (suspiciousHours.size == 31 * 24) {
-                suspiciousHours.forEach {
-                    dao.deleteHourUsage(it)
-                }
-                Log.e("leekleak", "Reached maximum amount of empty shit")
+                Log.i("leekleak", "Reached maximum amount of empty hours")
                 return
             }
 

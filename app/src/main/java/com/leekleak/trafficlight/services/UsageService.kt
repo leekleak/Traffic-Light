@@ -181,7 +181,7 @@ class UsageService : Service(), KoinComponent {
     }
 
     var forceUpdate = false
-    var lastSnapshot: TrafficSnapshot = TrafficSnapshot()
+    var lastSnapshot: TrafficSnapshot = TrafficSnapshot(-1)
     private suspend fun updateNotification(trafficSnapshot: TrafficSnapshot?) {
         if (lastSnapshot.closeEnough(trafficSnapshot) && !forceUpdate) {
             forceUpdate = false

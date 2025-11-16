@@ -53,19 +53,7 @@ data class TrafficSnapshot (
     var currentWifi: Long = 0,
 ) {
     val totalSpeed: Long
-        get() = downSpeed + upSpeed
-
-    val downSpeed: Long
-        get() = currentDown - lastDown
-
-    val upSpeed: Long
-        get() = currentUp - lastUp
-
-    val mobileSpeed: Long
-        get() = currentMobile - lastMobile
-
-    val wifiSpeed: Long
-        get() = currentWifi - lastWifi
+        get() = currentUp + currentDown - lastUp - lastDown
 
     private fun setCurrentAsLast() {
         lastDown = currentDown

@@ -1,18 +1,15 @@
 package com.leekleak.trafficlight.database
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
-import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Entity
 data class HourUsage(
     @PrimaryKey val timestamp: Long,
-    //val usage: HourData?,
     val totalWifi: Long,
     val totalCellular: Long
 )
@@ -28,20 +25,11 @@ interface HourlyUsageDao {
     @Insert
     fun addHourUsage(hourUsage: HourUsage)
 
-    @Update
-    fun updateHourUsage(hourUsage: HourUsage)
-
-    @Delete
-    fun deleteHourUsage(hourUsage: HourUsage)
-
     @Query("SELECT COUNT(*) FROM HourUsage")
     fun getDBSize(): Flow<Int>
 
     @Query("DELETE FROM HourUsage")
     fun clear()
-
-    //@Query("SELECT * FROM HourUsage ORDER BY timestamp DESC")
-    //fun getAllDayUsagePaging(): PagingSource<Int, HourUsage>
 
     @Query("SELECT MAX(totalCellular + totalWifi) FROM HourUsage")
     fun getMaxCombinedUsage(): Flow<Long>

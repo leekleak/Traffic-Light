@@ -11,6 +11,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.util.categoryTitle
@@ -55,7 +56,7 @@ fun Settings(
                 icon = painterResource(R.drawable.clear_history),
                 onClick = { viewModel.clearDB() },
                 controls = {
-                    Text(stringResource(R.string.days, dbSize / 24))
+                    Text(pluralStringResource(R.plurals.days, dbSize / 24, dbSize / 24))
                 }
             )
         }

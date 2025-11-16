@@ -25,5 +25,8 @@
     <string name="clear_history">Clear History</string>
     <string name="about">About</string>
     <string name="github" translatable="false">Github</string>
-    <string name="days">%1$d days</string>
+    <plurals name="days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
 </resources>

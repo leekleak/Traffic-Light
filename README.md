@@ -1,4 +1,4 @@
-<img width="128px" src="https://github.com/leekleak/traffic-light/blob/main/fastlane/metadata/android/en-US/images/icon.png?raw=true">
+<img width="128px" src="https://github.com/leekleak/traffic-light/blob/main/fastlane/metadata/android/en-US/images/icon.svg?raw=true">
 
 # Traffic Light
 <p>Traffic Light is an open-source tool inspired by <i>Internet Speed Meter</i> with an incredibly satisfying and expressive UI.</p>

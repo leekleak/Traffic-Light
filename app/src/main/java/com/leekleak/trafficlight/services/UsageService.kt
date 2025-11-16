@@ -59,6 +59,7 @@ class UsageService : Service(), KoinComponent {
         .setContentTitle("Traffic Light")
         .setChannelId(NOTIFICATION_CHANNEL_ID)
         .setOngoing(true)
+        .setSilent(true)
         .setWhen(Long.MAX_VALUE) // Keep above other notifications
         .setShowWhen(false) // Hide timestamp
     private var screenOn: Boolean = true

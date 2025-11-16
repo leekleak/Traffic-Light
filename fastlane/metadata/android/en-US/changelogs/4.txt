@@ -1,0 +1,8 @@
+General:
+- New app logo
+- Improve service restart speed
+- Add more shapes to the bar graph legend
+
+Bug fixes:
+- Fix notification sound playing every time the notification is updated
+- Fix crash when trying to populate history after setting up permissions

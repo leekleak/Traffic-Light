@@ -37,7 +37,11 @@ class HourlyUsageRepo(context: Context) {
 
     fun clearDB() = dao.clear()
 
+    var populating = false
     fun populateDb() {
+        if (populating) return
+        populating = true
+
         val suspiciousHours = mutableListOf<HourUsage>()
         val timezone = ZoneId.systemDefault().rules.getOffset(Instant.now())
         val date = LocalDate.now().atStartOfDay()
@@ -62,6 +66,7 @@ class HourlyUsageRepo(context: Context) {
                 suspiciousHours.clear()
             }
         }
+        populating = true
     }
 
     fun calculateDayUsage(date: LocalDate): DayUsage {

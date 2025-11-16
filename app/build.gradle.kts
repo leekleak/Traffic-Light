@@ -19,8 +19,6 @@ android {
         versionCode = 4
         versionName = "2.1"
         base.archivesName = "$namespace-$versionName"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {

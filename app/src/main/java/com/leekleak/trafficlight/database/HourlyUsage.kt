@@ -1,10 +1,12 @@
 package com.leekleak.trafficlight.database
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Entity
@@ -21,6 +23,12 @@ interface HourlyUsageDao {
 
     @Query("SELECT EXISTS(SELECT * FROM HourUsage WHERE timestamp = :stamp)")
     fun hourUsageExists(stamp: Long): Boolean
+
+    @Update
+    fun updateHourUsage(hourUsage: HourUsage)
+
+    @Delete
+    fun deleteHourUsage(hourUsage: HourUsage)
 
     @Insert
     fun addHourUsage(hourUsage: HourUsage)

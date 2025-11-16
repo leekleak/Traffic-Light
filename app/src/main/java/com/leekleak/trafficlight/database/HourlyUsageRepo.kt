@@ -35,7 +35,9 @@ class HourlyUsageRepo(context: Context) {
 
     fun getMaxCombinedUsage(): Flow<Long> = dao.getMaxCombinedUsage()
 
-    fun clearDB() = dao.clear()
+    fun clearDB() {
+        if (!populating) dao.clear()
+    }
 
     var populating = false
     fun populateDb() {
@@ -50,23 +52,27 @@ class HourlyUsageRepo(context: Context) {
         for (i in 1..10000) {
             if (suspiciousHours.size == 31 * 24) {
                 Log.i("leekleak", "Reached maximum amount of empty hours")
-                return
+                break
             }
 
             val hour = 3_600_000L
             val currentStamp = dayStamp - (i * hour)
             val hourUsage = getCurrentHourUsage(currentStamp, currentStamp + hour)
 
-            if (dao.hourUsageExists(currentStamp)) return
+            if (dao.hourUsageExists(currentStamp)) break
             suspiciousHours.add(HourUsage(currentStamp,hourUsage.wifi, hourUsage.cellular))
             if (hourUsage.total != 0L) {
                 for (hour in suspiciousHours) {
-                    dao.addHourUsage(hour)
+                    if (dao.hourUsageExists(hour.timestamp)) {
+                        dao.updateHourUsage(hour)
+                    } else {
+                        dao.addHourUsage(hour)
+                    }
                 }
                 suspiciousHours.clear()
             }
         }
-        populating = true
+        populating = false
     }
 
     fun calculateDayUsage(date: LocalDate): DayUsage {

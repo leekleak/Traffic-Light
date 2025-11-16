@@ -2,14 +2,20 @@ package com.leekleak.trafficlight.charts
 
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialShapes.Companion.Arch
+import androidx.compose.material3.MaterialShapes.Companion.Burst
+import androidx.compose.material3.MaterialShapes.Companion.Circle
 import androidx.compose.material3.MaterialShapes.Companion.Clover4Leaf
 import androidx.compose.material3.MaterialShapes.Companion.Clover8Leaf
+import androidx.compose.material3.MaterialShapes.Companion.Cookie12Sided
 import androidx.compose.material3.MaterialShapes.Companion.Cookie4Sided
 import androidx.compose.material3.MaterialShapes.Companion.Cookie6Sided
 import androidx.compose.material3.MaterialShapes.Companion.Cookie7Sided
 import androidx.compose.material3.MaterialShapes.Companion.Cookie9Sided
+import androidx.compose.material3.MaterialShapes.Companion.Flower
 import androidx.compose.material3.MaterialShapes.Companion.Pentagon
+import androidx.compose.material3.MaterialShapes.Companion.PixelCircle
 import androidx.compose.material3.MaterialShapes.Companion.Slanted
+import androidx.compose.material3.MaterialShapes.Companion.SoftBurst
 import androidx.compose.material3.MaterialShapes.Companion.Square
 import androidx.compose.material3.MaterialShapes.Companion.Sunny
 import androidx.compose.material3.MaterialShapes.Companion.VerySunny
@@ -25,8 +31,9 @@ import com.leekleak.trafficlight.util.px
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 object GraphTheme {
-    val wifiShapes = listOf(Pentagon, Clover8Leaf, VerySunny, Sunny, Cookie6Sided, Cookie7Sided, Cookie9Sided)
-    val cellularShapes = listOf(Square, Slanted, Arch, Cookie4Sided, Clover4Leaf)
+    val wifiShapes = listOf(Circle, Pentagon, VerySunny, Sunny, Cookie6Sided, Cookie7Sided,
+        Cookie9Sided, Cookie12Sided, Clover8Leaf, Burst, SoftBurst, Flower)
+    val cellularShapes = listOf(Square, Slanted, Arch, Cookie4Sided, Clover4Leaf, PixelCircle)
 
     val cornerRadius @Composable get() = CornerRadius(12.dp.px)
     val primaryColor @Composable get() = MaterialTheme.colorScheme.primary

@@ -1,6 +1,7 @@
 package com.leekleak.trafficlight
 
 import android.app.Application
+import com.leekleak.trafficlight.database.databaseModule
 import com.leekleak.trafficlight.database.hourlyUsageRepoModule
 import com.leekleak.trafficlight.model.preferenceRepoModule
 import org.koin.android.ext.koin.androidContext
@@ -12,7 +13,7 @@ class TrafficLightApplication : Application() {
 
         startKoin {
             androidContext(this@TrafficLightApplication)
-            modules(hourlyUsageRepoModule, preferenceRepoModule)
+            modules(hourlyUsageRepoModule, databaseModule, preferenceRepoModule)
         }
     }
 }

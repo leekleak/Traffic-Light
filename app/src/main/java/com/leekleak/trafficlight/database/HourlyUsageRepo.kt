@@ -7,13 +7,15 @@ import android.util.Log
 import com.leekleak.trafficlight.util.NetworkType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
-class HourlyUsageRepo(context: Context) {
-    private val dao = HourlyUsageDatabase.getInstance(context).hourlyUsageDao()
+class HourlyUsageRepo(context: Context) : KoinComponent {
+    private val dao: HourlyUsageDao by inject()
     private var networkStatsManager: NetworkStatsManager? = null
 
     init {

@@ -9,7 +9,7 @@ import org.koin.core.component.inject
 import java.time.LocalDate
 
 
-class HistoryVM() : ViewModel(), KoinComponent {
+class HistoryVM: ViewModel(), KoinComponent {
     private val hourlyUsageRepo: HourlyUsageRepo by inject()
 
     val lastDayFlow: Flow<LocalDate> = hourlyUsageRepo.getLastDayWithData()

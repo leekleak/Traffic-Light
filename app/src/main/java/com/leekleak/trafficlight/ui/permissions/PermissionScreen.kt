@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.util.WideScreenWrapper
 import com.leekleak.trafficlight.util.categoryTitle
@@ -36,8 +37,8 @@ fun Permissions(
     backgroundPermission: Boolean,
     usagePermission: Boolean
 ) {
+    val viewModel: PermissionVM = viewModel()
     val activity = LocalActivity.current
-    val viewModel = PermissionVM()
 
     val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val bottomPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()

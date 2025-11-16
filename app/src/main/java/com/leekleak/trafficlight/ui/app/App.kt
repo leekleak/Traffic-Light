@@ -8,6 +8,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.leekleak.trafficlight.services.UsageService
 import com.leekleak.trafficlight.ui.navigation.NavigationManager
 import com.leekleak.trafficlight.ui.permissions.Permissions
@@ -17,7 +18,8 @@ import com.leekleak.trafficlight.util.hasUsageStatsPermission
 
 @Composable
 fun App() {
-    val viewModel = AppVM()
+    val viewModel: AppVM = viewModel()
+
     val notificationPermission = remember { mutableStateOf(false) }
     val backgroundPermission = remember { mutableStateOf(false) }
     val usagePermission = remember { mutableStateOf(false) }

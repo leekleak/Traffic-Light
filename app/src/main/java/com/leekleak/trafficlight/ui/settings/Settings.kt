@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.util.categoryTitle
 import com.leekleak.trafficlight.util.categoryTitleSmall
@@ -21,7 +22,7 @@ import com.leekleak.trafficlight.util.categoryTitleSmall
 fun Settings(
     paddingValues: PaddingValues
 ) {
-    val viewModel = SettingsVM()
+    val viewModel: SettingsVM = viewModel()
     val activity = LocalActivity.current
     LazyColumn(
         Modifier.background(MaterialTheme.colorScheme.surface),

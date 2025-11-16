@@ -9,6 +9,7 @@ datastore = "1.1.7"
 kotlin = "2.2.21"
 kotlinxSerializationJson = "1.9.0"
 ksp = "2.2.20-2.0.4"
+lifecycle = "2.9.4"
 roomVersion = "2.8.3"
 koin-bom = "4.1.1"
 material3 = "1.5.0-alpha08"
@@ -27,6 +28,10 @@ androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", versi
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3"}
+
+# Lifecycle
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 
 # Room
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomVersion" }

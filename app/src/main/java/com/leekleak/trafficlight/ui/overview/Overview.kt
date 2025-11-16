@@ -40,6 +40,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.charts.BarGraph
 import com.leekleak.trafficlight.charts.model.BarData
@@ -53,7 +54,8 @@ import com.leekleak.trafficlight.util.toTimestamp
 fun Overview(
     paddingValues: PaddingValues
 ) {
-    val viewModel = OverviewVM()
+    val viewModel: OverviewVM = viewModel()
+
     val todayUsage by viewModel.todayUsage.collectAsState(DayUsage())
     val today = todayUsage.date
     val weekStart = today.minusDays(today.dayOfWeek.value - 1L)

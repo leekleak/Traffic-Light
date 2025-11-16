@@ -43,6 +43,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.charts.BarGraph
 import com.leekleak.trafficlight.charts.LineGraph
@@ -65,7 +66,7 @@ import java.util.Locale
 fun History(
     paddingValues: PaddingValues
 ) {
-    val viewModel = HistoryVM()
+    val viewModel: HistoryVM = viewModel()
     Dashboard(viewModel, paddingValues)
 }
 

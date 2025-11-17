@@ -93,6 +93,7 @@ class UsageService : Service(), KoinComponent {
 
     override fun onDestroy() {
         super.onDestroy()
+        unregisterReceiver(screenStateReceiver)
         job?.cancel()
         serviceScope.cancel()
     }

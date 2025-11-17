@@ -49,7 +49,7 @@ fun Settings(
             )
             val speedBits by viewModel.speedBits.collectAsState()
             SwitchPreference(
-                title = "Show speed in bits",
+                title = stringResource(R.string.speed_in_bits),
                 summary = null,
                 icon = painterResource(R.drawable.speed),
                 value = speedBits,

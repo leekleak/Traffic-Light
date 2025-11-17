@@ -31,4 +31,5 @@
         <item quantity="many">%d dienų</item>
         <item quantity="other">%d dienų</item>
     </plurals>
+    <string name="speed_in_bits">Greitį matuoti bitais</string>
 </resources>

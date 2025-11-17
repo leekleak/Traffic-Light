@@ -22,7 +22,6 @@ data class DataSize (
     val precisionDec: Double
         get() = 10.0.pow(precision)
 
-
     init {
         var i = DataSizeUnit.entries.indexOf(unit)
         while (value >= 1000 && i < DataSizeUnit.entries.size) {
@@ -74,13 +73,13 @@ class SizeFormatter (
     fun format(size: Number): String {
         val realSize = size.toFloat() * if (asBits && speed) 8f else 1f
         val dataSize = DataSize(realSize, DataSizeUnit.B, speed, precision)
-        return dataSize.toString()
+        return "$dataSize".let { if (asBits) it.replace("B", "b") else it }
     }
 
-    fun smartFormat(size: Number, speed: Boolean): String {
+    fun smartFormat(size: Number): String {
         val realSize = size.toFloat() * if (asBits && speed) 8f else 1f
         val dataSize = DataSize(realSize, DataSizeUnit.B, speed)
         dataSize.precision = if (dataSize.value < 10 && dataSize.unit >= DataSizeUnit.MB) 1 else 0
-        return dataSize.toString()
+        return "$dataSize".let { if (asBits) it.replace("B", "b") else it }
     }
 }

@@ -241,7 +241,7 @@ class UsageService : Service(), KoinComponent {
         val canvas = NativeCanvas(bitmap)
 
         val speedFormatter = SizeFormatter(true)
-        val text = speedFormatter.smartFormat(snapshot.totalSpeed, true)
+        val text = speedFormatter.smartFormat(snapshot.totalSpeed)
         val speed = text.take(text.indexOfFirst { it.isLetter() })
         val unit = text.substring(text.indexOfFirst { it.isLetter() })
 

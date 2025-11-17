@@ -24,6 +24,7 @@
     <string name="mobile">Mobile: %1$s</string>
     <string name="clear_history">Clear History</string>
     <string name="about">About</string>
+    <string name="speed_in_bits">Show speed in bits</string>
     <string name="github" translatable="false">Github</string>
     <plurals name="days">
         <item quantity="one">%d day</item>

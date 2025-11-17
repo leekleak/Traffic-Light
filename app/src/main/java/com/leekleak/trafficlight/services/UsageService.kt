@@ -152,15 +152,13 @@ class UsageService : Service(), KoinComponent {
             var nextTick = System.nanoTime()
             while (true) {
                 trafficSnapshot.updateSnapshot()
-                if (System.nanoTime() >= nextTick) {
+                if (!trafficSnapshot.isCurrentSameAsLast() || System.nanoTime() > nextTick) {
                     hourlyUsageRepo.populateDb()
-                    if (screenOn || preferenceRepo.modeAOD.first()) launch {
-                        updateNotification(trafficSnapshot)
-                        trafficSnapshot.setCurrentAsLast()
-                    }
-                    launch { updateDatabase() }
+                    updateNotification(trafficSnapshot)
+                    updateDatabase()
+                    trafficSnapshot.setCurrentAsLast()
 
-                    nextTick += 1_000_000_000L
+                    nextTick = System.nanoTime() + 1_100_000_000L
                 }
 
                 /**

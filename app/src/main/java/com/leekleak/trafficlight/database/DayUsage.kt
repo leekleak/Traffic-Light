@@ -62,6 +62,13 @@ data class TrafficSnapshot (
         lastWifi = currentWifi
     }
 
+    fun isCurrentSameAsLast(): Boolean {
+        return lastDown == currentDown &&
+            lastUp == currentUp &&
+            lastMobile == currentMobile &&
+            lastWifi == currentWifi
+    }
+
     fun updateSnapshot() {
         currentDown = TrafficStats.getTotalRxBytes()
         currentUp = TrafficStats.getTotalTxBytes()

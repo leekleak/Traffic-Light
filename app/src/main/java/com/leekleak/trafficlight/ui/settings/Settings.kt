@@ -47,6 +47,15 @@ fun Settings(
                 value = bigIcon,
                 onValueChanged = { viewModel.setBigIcon(it) }
             )
+            val speedBits by viewModel.speedBits.collectAsState()
+            SwitchPreference(
+                title = "Show speed in bits",
+                summary = null,
+                icon = painterResource(R.drawable.speed),
+                value = speedBits,
+                onValueChanged = { viewModel.setSpeedBits(it) }
+            )
+
         }
         categoryTitleSmall(R.string.history)
         PreferenceCategory {

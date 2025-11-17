@@ -37,7 +37,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -54,6 +53,7 @@ import com.leekleak.trafficlight.util.categoryTitle
 import com.leekleak.trafficlight.util.categoryTitleSmall
 import com.leekleak.trafficlight.util.getName
 import com.leekleak.trafficlight.util.padHour
+import kotlinx.coroutines.runBlocking
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -107,7 +107,6 @@ fun Dashboard(viewModel: HistoryVM, paddingValues: PaddingValues) {
     }
 }
 
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun HistoryItem(
     viewModel: HistoryVM,

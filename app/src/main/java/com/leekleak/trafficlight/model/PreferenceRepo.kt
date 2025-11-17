@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class PreferenceRepo (
@@ -26,8 +27,12 @@ class PreferenceRepo (
 
     val bigIcon: Flow<Boolean> = context.dataStore.data.map { it[BIG_ICON] ?: false }
     fun setBigIcon(value: Boolean) = scope.launch { context.dataStore.edit { it[BIG_ICON] = value } }
+
+    val speedBits: Flow<Boolean> = context.dataStore.data.map { it[SPEED_BITS] ?: false }
+    fun setSpeedBits(value: Boolean) = scope.launch { context.dataStore.edit { it[SPEED_BITS] = value } }
     private companion object {
         val MODE_AOD = booleanPreferencesKey("mode_aod")
         val BIG_ICON = booleanPreferencesKey("big_icon")
+        val SPEED_BITS = booleanPreferencesKey("speed_bits")
     }
 }

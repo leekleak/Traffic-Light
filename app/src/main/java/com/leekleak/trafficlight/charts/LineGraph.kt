@@ -3,7 +3,6 @@ package com.leekleak.trafficlight.charts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -18,7 +17,6 @@ import com.leekleak.trafficlight.util.px
 import java.lang.Float.max
 import kotlin.math.min
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LineGraph(
     maximum: Long,

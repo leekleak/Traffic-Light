@@ -26,7 +26,6 @@ import com.leekleak.trafficlight.database.HourlyUsageRepo
 import com.leekleak.trafficlight.database.TrafficSnapshot
 import com.leekleak.trafficlight.model.PreferenceRepo
 import com.leekleak.trafficlight.util.SizeFormatter
-import com.leekleak.trafficlight.util.SizeFormatter.Companion.smartFormat
 import com.leekleak.trafficlight.util.clipAndPad
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -220,7 +219,8 @@ class UsageService : Service(), KoinComponent {
         val bitmap = createBitmap((96 * multiplier).toInt(), (96 * multiplier).toInt())
         val canvas = NativeCanvas(bitmap)
 
-        val text = smartFormat(snapshot.totalSpeed, true)
+        val speedFormatter = SizeFormatter(true)
+        val text = speedFormatter.smartFormat(snapshot.totalSpeed, true)
         val speed = text.take(text.indexOfFirst { it.isLetter() })
         val unit = text.substring(text.indexOfFirst { it.isLetter() })
 

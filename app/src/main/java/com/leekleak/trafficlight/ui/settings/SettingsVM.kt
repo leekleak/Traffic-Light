@@ -20,13 +20,11 @@ class SettingsVM : ViewModel(), KoinComponent {
     private val hourlyUsageRepo: HourlyUsageRepo by inject()
 
     val modeAOD = preferenceRepo.modeAOD.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
-
     fun setModeAOD(enabled: Boolean) = preferenceRepo.setModeAOD(enabled)
-
     val bigIcon = preferenceRepo.bigIcon.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
-
     fun setBigIcon(enabled: Boolean) = preferenceRepo.setBigIcon(enabled)
-
+    val speedBits = preferenceRepo.speedBits.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
+    fun setSpeedBits(enabled: Boolean) = preferenceRepo.setSpeedBits(enabled)
     val dbSize = hourlyUsageRepo.getDBSize().stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
     fun clearDB() {
         viewModelScope.launch(Dispatchers.IO) {

@@ -1,5 +1,10 @@
 package com.leekleak.trafficlight.util
 
+import com.leekleak.trafficlight.model.PreferenceRepo
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import kotlin.math.ceil
 import kotlin.math.pow
 
@@ -62,17 +67,20 @@ data class DataSize (
 class SizeFormatter (
     private val speed: Boolean = false,
     private val precision: Int = 0
-) {
+): KoinComponent {
+    private val preferenceRepo: PreferenceRepo by inject()
+    private val asBits = runBlocking { preferenceRepo.speedBits.first() }
+
     fun format(size: Number): String {
-        val size = DataSize(size.toFloat(), DataSizeUnit.B, speed, precision)
-        return size.toString()
+        val realSize = size.toFloat() * if (asBits && speed) 8f else 1f
+        val dataSize = DataSize(realSize, DataSizeUnit.B, speed, precision)
+        return dataSize.toString()
     }
 
-    companion object {
-        fun smartFormat(size: Number, speed: Boolean): String {
-            val size = DataSize(size.toFloat(), DataSizeUnit.B, speed)
-            size.precision = if (size.value < 10 && size.unit >= DataSizeUnit.MB) 1 else 0
-            return size.toString()
-        }
+    fun smartFormat(size: Number, speed: Boolean): String {
+        val realSize = size.toFloat() * if (asBits && speed) 8f else 1f
+        val dataSize = DataSize(realSize, DataSizeUnit.B, speed)
+        dataSize.precision = if (dataSize.value < 10 && dataSize.unit >= DataSizeUnit.MB) 1 else 0
+        return dataSize.toString()
     }
 }

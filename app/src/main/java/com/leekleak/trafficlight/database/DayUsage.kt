@@ -55,7 +55,7 @@ data class TrafficSnapshot (
     val totalSpeed: Long
         get() = currentUp + currentDown - lastUp - lastDown
 
-    private fun setCurrentAsLast() {
+    fun setCurrentAsLast() {
         lastDown = currentDown
         lastUp = currentUp
         lastMobile = currentMobile
@@ -63,22 +63,17 @@ data class TrafficSnapshot (
     }
 
     fun updateSnapshot() {
-        setCurrentAsLast()
         currentDown = TrafficStats.getTotalRxBytes()
         currentUp = TrafficStats.getTotalTxBytes()
         currentMobile = TrafficStats.getMobileRxBytes() + TrafficStats.getMobileTxBytes()
         currentWifi = currentUp + currentDown - currentMobile
 
-        // When switching networks the api sometimes fucks up the values as per
-        // https://issuetracker.google.com/issues/37009612
-        // Yes. That bug report is from 2014.
-        // Yes. It still happens on my Android 16 device.
-
-        // I think ignoring data until it fixes itself up is fine
-
-        if (currentMobile < lastMobile || currentWifi < lastWifi) {
-            setCurrentAsLast()
-        }
+        /**
+         * Fun fact: when switching networks the api sometimes fucks up the values as per
+         * https://issuetracker.google.com/issues/37009612
+         * Yes. That bug report is from 2014.
+         * Yes. It still happens on my Android 16 device.
+        */
     }
 
     fun closeEnough(other: TrafficSnapshot?): Boolean {

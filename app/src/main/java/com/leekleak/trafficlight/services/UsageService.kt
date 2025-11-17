@@ -152,12 +152,35 @@ class UsageService : Service(), KoinComponent {
             var nextTick = System.nanoTime()
             while (true) {
                 trafficSnapshot.updateSnapshot()
-                hourlyUsageRepo.populateDb()
-                if (screenOn || preferenceRepo.modeAOD.first()) launch { updateNotification(trafficSnapshot) }
-                launch { updateDatabase() }
+                if (System.nanoTime() >= nextTick) {
+                    hourlyUsageRepo.populateDb()
+                    if (screenOn || preferenceRepo.modeAOD.first()) launch {
+                        updateNotification(trafficSnapshot)
+                        trafficSnapshot.setCurrentAsLast()
+                    }
+                    launch { updateDatabase() }
 
-                nextTick += 1_000_000_000L
-                delay((nextTick - System.nanoTime()) / 1_000_000)
+                    nextTick += 1_000_000_000L
+                }
+
+                /**
+                 * Absolutely no idea why such tomfoolery is necessary, but it is.
+                 *
+                 * Technically one would expect it to be optimal for the loop to run once a second,
+                 * however it seems like if you do not poke at the TrafficStats API once in a while
+                 * it will forget who's it's boss and start to do stupid shit.
+                 *
+                 * If anyone knows why this happens and how to fix it: Please. I beg of you.
+                 *
+                 * Example:
+                 *  Expected notification behavior:
+                 *  10MB/s -> 11MB/s -> 9MB/s -> 8MB/s -> 10MB/s -> 10MB/s
+                 *
+                 *  Notification behavior without this workaround:
+                 *  10MB/s -> 0MB/s -> 20MB/s -> 0MB/s -> 18MB/s -> 0MB/s
+                 */
+
+                delay(50)
             }
         }
     }

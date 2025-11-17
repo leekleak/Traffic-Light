@@ -1,0 +1,8 @@
+Notification:
+- Add option to show speed in bits
+- Improve update timing responsiveness
+
+Other:
+- Fix erratic network speed behavior
+- Fix incorrect localization
+- Several code quality improvements and cleanup

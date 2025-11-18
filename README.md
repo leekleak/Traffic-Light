@@ -12,3 +12,15 @@
 
 | ![Screenshot 1](fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot01.png) | ![Screenshot 2](fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot02.png) | ![Screenshot 3](fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot03.png) | ![Screenshot 4](fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot04.png) |
 |-------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
+
+## Contributions
+
+### Code
+Contributors are welcome, however as I'm quite jaded, please create an issue first. Unless I deem it incredibly useful, I doubt I'll accept any major new features, so please tell me first so as to not be disappointed.
+
+### Translations
+All translations are welcome.
+
+## Blog post
+I wrote a little blog post about this project, why I made it and how it turned out the way it did. You can read it [here](https://tintotint.eu/programming/traffic-light/)
+

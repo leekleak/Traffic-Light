@@ -25,7 +25,7 @@ class HourlyUsageRepo(context: Context) : KoinComponent {
     fun getDBSize(): Flow<Int> = dao.getDBSize()
 
     fun getUsage(startStamp: Long, endStamp: Long): Flow<List<HourUsage>> =
-        dao.getUsage(startStamp, endStamp)
+        dao.getUsageFlow(startStamp, endStamp)
 
     fun getLastDayWithData(): Flow<LocalDate> = dao.getLastUsage().map { hourUsage ->
         hourUsage?.let {
@@ -59,11 +59,17 @@ class HourlyUsageRepo(context: Context) : KoinComponent {
 
             val hour = 3_600_000L
             val currentStamp = dayStamp - (i * hour)
-            val hourUsage = getCurrentHourUsage(currentStamp, currentStamp + hour)
+            val hourData = getCurrentHourData(currentStamp, currentStamp + hour)
 
-            if (dao.hourUsageExists(currentStamp)) break
-            suspiciousHours.add(HourUsage(currentStamp,hourUsage.wifi, hourUsage.cellular))
-            if (hourUsage.total != 0L) {
+            if (
+                dao.hourUsageExists(currentStamp) &&
+                dao.getUsage(currentStamp, currentStamp + hour).first() == hourData.toHourUsage(currentStamp)
+            )  {
+                break
+            }
+
+            suspiciousHours.add(HourUsage(currentStamp,hourData.wifi, hourData.cellular))
+            if (hourData.total != 0L) {
                 for (hour in suspiciousHours) {
                     if (dao.hourUsageExists(hour.timestamp)) {
                         dao.updateHourUsage(hour)
@@ -84,13 +90,13 @@ class HourlyUsageRepo(context: Context) : KoinComponent {
 
         for (k in 0..23) {
             val globalHour = dayStamp + k * 3_600_000L
-            hours[globalHour] = getCurrentHourUsage(globalHour, globalHour + 3_600_000L)
+            hours[globalHour] = getCurrentHourData(globalHour, globalHour + 3_600_000L)
         }
 
         return DayUsage(date, hours).also { it.categorizeUsage() }
     }
 
-    fun getCurrentHourUsage(startTime: Long, endTime: Long): HourData {
+    fun getCurrentHourData(startTime: Long, endTime: Long): HourData {
         val statsWifi = networkStatsManager?.querySummaryForDevice(NetworkType.Wifi.ordinal, null, startTime, endTime)
         val statsMobile = networkStatsManager?.querySummaryForDevice(NetworkType.Cellular.ordinal, null, startTime, endTime)
 

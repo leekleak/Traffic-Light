@@ -61,19 +61,25 @@ class UsageService : Service(), KoinComponent {
         .setSilent(true)
         .setWhen(Long.MAX_VALUE) // Keep above other notifications
         .setShowWhen(false) // Hide timestamp
-    private var screenOn: Boolean = true
+
     private val screenStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 Intent.ACTION_SCREEN_ON -> {
-                    screenOn = true
+                    if (job == null) startJob()
                 }
                 Intent.ACTION_SCREEN_OFF -> {
-                    screenOn = false
+                    if (!aodMode) {
+                        job?.cancel()
+                        job = null
+                    }
                 }
             }
         }
     }
+
+    var forceUpdate = false
+    var aodMode = false
 
     override fun onBind(intent: Intent): IBinder? {
         return null
@@ -87,6 +93,7 @@ class UsageService : Service(), KoinComponent {
             addAction(Intent.ACTION_SCREEN_OFF)
         })
         serviceScope.launch {
+            preferenceRepo.modeAOD.collect { aodMode = it }
             preferenceRepo.bigIcon.collect { forceUpdate = true }
         }
     }
@@ -150,36 +157,24 @@ class UsageService : Service(), KoinComponent {
         job = serviceScope.launch {
             val trafficSnapshot = TrafficSnapshot()
             trafficSnapshot.updateSnapshot()
-            var nextTick = System.nanoTime()
+            trafficSnapshot.setCurrentAsLast()
+
             while (true) {
                 trafficSnapshot.updateSnapshot()
-                if (!trafficSnapshot.isCurrentSameAsLast() || System.nanoTime() > nextTick) {
-                    hourlyUsageRepo.populateDb()
-                    updateNotification(trafficSnapshot)
-                    updateDatabase()
-                    trafficSnapshot.setCurrentAsLast()
-
-                    nextTick = System.nanoTime() + 1_100_000_000L
+                val tick = System.nanoTime()
+                while (trafficSnapshot.isCurrentSameAsLast() && System.nanoTime() < tick + 200_000_000) {
+                    if (trafficSnapshot.isCurrentSameAsLast()) {
+                        delay(40)
+                        trafficSnapshot.updateSnapshot()
+                    }
                 }
 
-                /**
-                 * Absolutely no idea why such tomfoolery is necessary, but it is.
-                 *
-                 * Technically one would expect it to be optimal for the loop to run once a second,
-                 * however it seems like if you do not poke at the TrafficStats API once in a while
-                 * it will forget who's it's boss and start to do stupid shit.
-                 *
-                 * If anyone knows why this happens and how to fix it: Please. I beg of you.
-                 *
-                 * Example:
-                 *  Expected notification behavior:
-                 *  10MB/s -> 11MB/s -> 9MB/s -> 8MB/s -> 10MB/s -> 10MB/s
-                 *
-                 *  Notification behavior without this workaround:
-                 *  10MB/s -> 0MB/s -> 20MB/s -> 0MB/s -> 18MB/s -> 0MB/s
-                 */
+                hourlyUsageRepo.populateDb()
+                updateNotification(trafficSnapshot)
+                updateDatabase()
+                trafficSnapshot.setCurrentAsLast()
 
-                delay(50)
+                delay(900)
             }
         }
     }
@@ -197,13 +192,12 @@ class UsageService : Service(), KoinComponent {
 
             todayUsage = todayUsage.copy(
                 hours = todayUsage.hours.toMutableMap().apply {
-                    this[stamp] = hourlyUsageRepo.getCurrentHourUsage(stamp, stampNow)
+                    this[stamp] = hourlyUsageRepo.getCurrentHourData(stamp, stampNow)
                 }
             ).also { it.categorizeUsage() }
         }
     }
 
-    var forceUpdate = false
     var lastSnapshot: TrafficSnapshot = TrafficSnapshot(-1)
     private suspend fun updateNotification(trafficSnapshot: TrafficSnapshot?) {
         if (lastSnapshot.closeEnough(trafficSnapshot) && !forceUpdate) {

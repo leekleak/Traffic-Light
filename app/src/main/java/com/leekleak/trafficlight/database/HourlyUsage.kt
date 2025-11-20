@@ -19,7 +19,10 @@ data class HourUsage(
 @Dao
 interface HourlyUsageDao {
     @Query("SELECT * FROM HourUsage WHERE timestamp BETWEEN :startStamp AND :endStamp ORDER BY timestamp ASC")
-    fun getUsage(startStamp: Long, endStamp: Long): Flow<List<HourUsage>>
+    fun getUsageFlow(startStamp: Long, endStamp: Long): Flow<List<HourUsage>>
+
+    @Query("SELECT * FROM HourUsage WHERE timestamp BETWEEN :startStamp AND :endStamp ORDER BY timestamp ASC")
+    fun getUsage(startStamp: Long, endStamp: Long): List<HourUsage>
 
     @Query("SELECT EXISTS(SELECT * FROM HourUsage WHERE timestamp = :stamp)")
     fun hourUsageExists(stamp: Long): Boolean

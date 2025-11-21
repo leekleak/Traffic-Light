@@ -9,6 +9,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ServiceInfo
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.Paint
 import android.os.IBinder
 import android.util.Log
@@ -34,7 +36,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -79,6 +80,7 @@ class UsageService : Service(), KoinComponent {
     }
 
     var forceUpdate = false
+    var bigIcon = false
     var aodMode = false
 
     override fun onBind(intent: Intent): IBinder? {
@@ -94,7 +96,10 @@ class UsageService : Service(), KoinComponent {
         })
         serviceScope.launch {
             preferenceRepo.modeAOD.collect { aodMode = it }
-            preferenceRepo.bigIcon.collect { forceUpdate = true }
+            preferenceRepo.bigIcon.collect {
+                forceUpdate = true
+                bigIcon = it
+            }
         }
     }
 
@@ -159,17 +164,21 @@ class UsageService : Service(), KoinComponent {
             trafficSnapshot.updateSnapshot()
             trafficSnapshot.setCurrentAsLast()
 
+            var dataUsed: Long = 5_000_001
             while (true) {
                 trafficSnapshot.updateSnapshot()
                 val tick = System.nanoTime()
-                while (trafficSnapshot.isCurrentSameAsLast() && System.nanoTime() < tick + 200_000_000) {
-                    if (trafficSnapshot.isCurrentSameAsLast()) {
-                        delay(40)
-                        trafficSnapshot.updateSnapshot()
-                    }
+                while (trafficSnapshot.isCurrentSameAsLast() && System.nanoTime() < tick + 250_000_000) {
+                    delay(100)
+                    trafficSnapshot.updateSnapshot()
                 }
 
-                hourlyUsageRepo.populateDb()
+                dataUsed += trafficSnapshot.totalSpeed
+                if (dataUsed > 5_000_000) {
+                    hourlyUsageRepo.populateDb()
+                    dataUsed = 0
+                }
+
                 updateNotification(trafficSnapshot)
                 updateDatabase()
                 trafficSnapshot.setCurrentAsLast()
@@ -199,7 +208,7 @@ class UsageService : Service(), KoinComponent {
     }
 
     var lastSnapshot: TrafficSnapshot = TrafficSnapshot(-1)
-    private suspend fun updateNotification(trafficSnapshot: TrafficSnapshot?) {
+    private fun updateNotification(trafficSnapshot: TrafficSnapshot?) {
         if (lastSnapshot.closeEnough(trafficSnapshot) && !forceUpdate) {
             forceUpdate = false
             Log.i("UsageService", "Skipped notification update: ${trafficSnapshot?.totalSpeed}")
@@ -227,24 +236,33 @@ class UsageService : Service(), KoinComponent {
         notificationManager?.notify(NOTIFICATION_ID, notification)
     }
 
-    suspend fun createIcon(snapshot: TrafficSnapshot): IconCompat {
-        val bigIcon = if (preferenceRepo.bigIcon.first()) 2f else 1f
+    private val paint by lazy {
+        Paint().apply {
+            color = ContextCompat.getColor(this@UsageService, R.color.white)
+            typeface = resources.getFont(R.font.roboto_condensed_semi_bold)
+            textAlign = Paint.Align.CENTER
+        }
+    }
+    private var bitmap: Bitmap? = null
+    fun createIcon(snapshot: TrafficSnapshot): IconCompat {
         val density = Density(this@UsageService)
-        val multiplier = 24 * density.density * bigIcon / 96f
+        val multiplier = 24 * density.density / 96f * if (bigIcon) 2f else 1f
 
-        val bitmap = createBitmap((96 * multiplier).toInt(), (96 * multiplier).toInt())
-        val canvas = NativeCanvas(bitmap)
+        if (bitmap == null) {
+            bitmap = createBitmap((96 * multiplier).toInt(), (96 * multiplier).toInt())
+        } else {
+            bitmap?.eraseColor(Color.TRANSPARENT)
+        }
+
+        val canvas = NativeCanvas(bitmap!!)
 
         val speedFormatter = SizeFormatter(true)
         val text = speedFormatter.smartFormat(snapshot.totalSpeed)
         val speed = text.take(text.indexOfFirst { it.isLetter() })
         val unit = text.substring(text.indexOfFirst { it.isLetter() })
 
-        val paint = Paint().apply {
-            color = ContextCompat.getColor(this@UsageService, R.color.white)
+        paint.apply {
             textSize = 72f * multiplier
-            textAlign = Paint.Align.CENTER
-            typeface = resources.getFont(R.font.roboto_condensed_semi_bold)
             letterSpacing = -0.05f * multiplier
         }
         canvas.drawText(speed, 48f * multiplier, 56f * multiplier, paint)
@@ -255,7 +273,7 @@ class UsageService : Service(), KoinComponent {
         }
         canvas.drawText(unit, 48f * multiplier, 96f * multiplier, paint)
 
-        return IconCompat.createWithBitmap(bitmap)
+        return IconCompat.createWithBitmap(bitmap!!)
     }
 
     companion object {

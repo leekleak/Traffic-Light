@@ -1,7 +1,14 @@
 <img width="128px" src="https://github.com/leekleak/traffic-light/blob/main/fastlane/metadata/android/en-US/images/icon.png?raw=true" alt="Logo">
 
 # Traffic Light
-<p>Traffic Light is an open-source tool inspired by <i>Internet Speed Meter</i> with an incredibly satisfying and expressive UI.</p>
+Traffic Light is an open-source tool to track your network speed and data usage inspired by Internet Speed Meter.
+
+## Why?
+- Free and open source
+- Uses few [permissions](https://github.com/leekleak/traffic-light/wiki/Permission-Comparison)
+- No tracking
+- Beautiful UI
+- Incredibly small app size
 
 ## Downloads
 

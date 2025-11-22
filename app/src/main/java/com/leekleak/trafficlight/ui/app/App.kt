@@ -49,7 +49,7 @@ fun App() {
             if (notificationPermission.value && backgroundPermission.value && usagePermission.value) {
                 viewModel.updateDB()
             }
-            delay(1000)
+            delay(2000)
         }
     }
 

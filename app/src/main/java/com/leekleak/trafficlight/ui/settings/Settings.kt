@@ -30,7 +30,7 @@ fun Settings(
     ) {
         categoryTitle(R.string.settings)
         categoryTitleSmall(R.string.notifications)
-        PreferenceCategory {
+        preferenceCategory {
             val modeAOD by viewModel.modeAOD.collectAsState()
             SwitchPreference(
                 title = stringResource(R.string.screen_off_update),
@@ -58,7 +58,7 @@ fun Settings(
 
         }
         categoryTitleSmall(R.string.history)
-        PreferenceCategory {
+        preferenceCategory {
             val dbSize by viewModel.dbSize.collectAsState()
             Preference(
                 title = stringResource(R.string.clear_history),
@@ -71,7 +71,7 @@ fun Settings(
             )
         }
         categoryTitleSmall(R.string.about)
-        PreferenceCategory {
+        preferenceCategory {
             Preference(
                 title = stringResource(R.string.github),
                 summary = null,

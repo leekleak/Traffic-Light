@@ -70,13 +70,13 @@ fun Overview(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = paddingValues
     ) {
-        OverviewTab(
+        overviewTab(
             label = R.string.today,
             data = dayUsageToBarData(todayUsage.hours.map { (_, value) -> value.toHourUsage() }),
         )
 
         if (weeklyUsage.isNotEmpty()) {
-            OverviewTab(
+            overviewTab(
                 label = R.string.this_week,
                 data = weeklyUsage,
                 finalGridPoint = "",
@@ -86,7 +86,7 @@ fun Overview(
     }
 }
 
-fun LazyListScope.OverviewTab(
+fun LazyListScope.overviewTab(
     label: Int,
     data: List<BarData>,
     finalGridPoint: String = "24",

@@ -1,16 +1,17 @@
 package com.leekleak.trafficlight.util
 
-import com.leekleak.trafficlight.model.PreferenceRepo
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import java.math.RoundingMode
 import kotlin.math.ceil
+import kotlin.math.max
 import kotlin.math.pow
 
 enum class DataSizeUnit {
     B, KB, MB, GB, TB, // Actual sizes
-    PB, EB, ZB, YB  // Mental disorders
+    PB, EB, ZB, YB;  // Mental disorders
+
+    fun getSize(precision: Int = 0): Long {
+        return (1024.0.pow(max(entries.indexOf(this) - precision/3.0, 0.0))).toLong()
+    }
 }
 
 data class DataSize (
@@ -51,35 +52,33 @@ data class DataSize (
             unit = DataSizeUnit.KB
              if (value > 0) "<1" else "0"
         } else applyPrecision(value)
-        return "$outValue$unit${if (speed) "/s" else ""}"
+        return "$outValue $unit${if (speed) "/s" else ""}"
     }
 
-    fun toStringParts(): List<String> {
+    fun toStringParts(uppercase: Boolean = true): List<String> {
+        val newValue = value.toBigDecimal().setScale(precision, RoundingMode.HALF_UP).toString()
+        val newUnit = unit.toString().let { if (!uppercase) it.replace("B", "b") else it }
         return listOf(
-            value.toInt().toString(),
-            (value * precisionDec % precisionDec).toInt().toString(),
-            unit.toString()
+            newValue.substringBefore('.'),
+            if (newValue.contains('.')) newValue.substringAfter('.') else "",
+            newUnit + if (speed) "/s" else ""
         )
     }
 }
 
-class SizeFormatter (
-    private val speed: Boolean = false,
-    private val precision: Int = 0
-): KoinComponent {
-    private val preferenceRepo: PreferenceRepo by inject()
-    private val asBits = runBlocking { preferenceRepo.speedBits.first() }
+class SizeFormatter () {
+    var asBits = false
 
-    fun format(size: Number): String {
+    fun format(size: Number, precision: Int, speed: Boolean = false): String {
         val realSize = size.toFloat() * if (asBits && speed) 8f else 1f
         val dataSize = DataSize(realSize, DataSizeUnit.B, speed, precision)
-        return "$dataSize".let { if (asBits) it.replace("B", "b") else it }
+        return "$dataSize".let { if (asBits && speed) it.replace("B", "b") else it }
     }
 
-    fun smartFormat(size: Number): String {
+    fun partFormat(size: Number, speed: Boolean = false): List<String> {
         val realSize = size.toFloat() * if (asBits && speed) 8f else 1f
-        val dataSize = DataSize(realSize, DataSizeUnit.B, speed)
+        val dataSize = DataSize(realSize, DataSizeUnit.B, speed, 2)
         dataSize.precision = if (dataSize.value < 10 && dataSize.unit >= DataSizeUnit.MB) 1 else 0
-        return "$dataSize".let { if (asBits) it.replace("B", "b") else it }
+        return dataSize.toStringParts(!asBits || !speed)
     }
 }

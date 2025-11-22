@@ -55,6 +55,12 @@ data class TrafficSnapshot (
     val totalSpeed: Long
         get() = currentUp + currentDown - lastUp - lastDown
 
+    val mobileSpeed: Long
+        get() = currentMobile - lastMobile
+
+    val wifiSpeed: Long
+        get() = currentWifi - lastWifi
+
     fun setCurrentAsLast() {
         lastDown = currentDown
         lastUp = currentUp
@@ -83,10 +89,10 @@ data class TrafficSnapshot (
         */
     }
 
-    fun closeEnough(other: TrafficSnapshot?): Boolean {
+    /*fun closeEnough(other: TrafficSnapshot?): Boolean {
         return other?.let {
             totalSpeed == it.totalSpeed ||
-            (totalSpeed  in 1..1023 && it.totalSpeed in 1..1023)
+            (totalSpeed in 1..1023 && it.totalSpeed in 1..1023)
         } ?: false
-    }
+    }*/
 }

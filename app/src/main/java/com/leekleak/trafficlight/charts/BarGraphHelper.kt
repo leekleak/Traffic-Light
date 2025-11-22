@@ -51,7 +51,7 @@ internal class BarGraphHelper(
     private val xAxisData: List<String>,
     private val finalGridPoint: String
 ) {
-    private var sizeFormatter = SizeFormatter(false, 0)
+    private var sizeFormatter = SizeFormatter()
     internal val metrics = scope.buildMetrics()
 
     private fun DrawScope.buildMetrics(): BarGraphMetrics {
@@ -226,7 +226,7 @@ internal class BarGraphHelper(
             val dataSize = DataSize(getAbsoluteMax(yAxisData))
 
             drawContext.canvas.nativeCanvas.drawText(
-                sizeFormatter.format(dataSize.getComparisonValue().getBitValue()),
+                sizeFormatter.format(dataSize.getComparisonValue().getBitValue(), 0, false),
                 metrics.gridWidth + 4.sp.toPx(),
                 0f + 4.sp.toPx(),
                 paint.apply { textAlign = Paint.Align.LEFT }

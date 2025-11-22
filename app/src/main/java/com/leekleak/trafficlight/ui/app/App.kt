@@ -2,6 +2,7 @@ package com.leekleak.trafficlight.ui.app
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -15,6 +16,7 @@ import com.leekleak.trafficlight.ui.permissions.Permissions
 import com.leekleak.trafficlight.util.hasBackgroundPermission
 import com.leekleak.trafficlight.util.hasNotificationPermission
 import com.leekleak.trafficlight.util.hasUsageStatsPermission
+import kotlinx.coroutines.delay
 
 @Composable
 fun App() {
@@ -35,12 +37,20 @@ fun App() {
 
                 if (notificationPermission.value && backgroundPermission.value && usagePermission.value) {
                     UsageService.startService(context)
-                    viewModel.updateDB()
                 }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    LaunchedEffect (Unit) {
+        while (true) {
+            if (notificationPermission.value && backgroundPermission.value && usagePermission.value) {
+                viewModel.updateDB()
+            }
+            delay(1000)
+        }
     }
 
     if (notificationPermission.value && backgroundPermission.value && usagePermission.value) {

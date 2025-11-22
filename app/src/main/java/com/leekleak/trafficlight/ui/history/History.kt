@@ -226,7 +226,7 @@ fun DataBadge (
     tint: Color,
     value: Long
 ) {
-    val sizeFormatter = remember { SizeFormatter(false, 1) }
+    val sizeFormatter = remember { SizeFormatter() }
     Box (modifier = Modifier.clip(MaterialTheme.shapes.small)) {
         Row(
             modifier = Modifier
@@ -241,7 +241,7 @@ fun DataBadge (
                 tint = tint
             )
             Text(
-                text = sizeFormatter.format(value),
+                text = sizeFormatter.format(value, 1),
                 color = tint
             )
         }

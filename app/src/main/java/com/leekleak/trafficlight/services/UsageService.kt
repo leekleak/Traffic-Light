@@ -27,6 +27,7 @@ import com.leekleak.trafficlight.database.DayUsage
 import com.leekleak.trafficlight.database.HourlyUsageRepo
 import com.leekleak.trafficlight.database.TrafficSnapshot
 import com.leekleak.trafficlight.model.PreferenceRepo
+import com.leekleak.trafficlight.util.DataSize
 import com.leekleak.trafficlight.util.SizeFormatter
 import com.leekleak.trafficlight.util.clipAndPad
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +45,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
+import kotlin.math.max
 
 class UsageService : Service(), KoinComponent {
     private val serviceScope = CoroutineScope(Dispatchers.IO)
@@ -51,17 +53,18 @@ class UsageService : Service(), KoinComponent {
 
     private val hourlyUsageRepo: HourlyUsageRepo by inject()
     private val preferenceRepo: PreferenceRepo by inject()
-    private var notificationManager: NotificationManager? = null
-
+    private val notificationManager: NotificationManager by lazy { getSystemService(NOTIFICATION_SERVICE) as NotificationManager }
     private var notification: Notification? = null
-    private var notificationBuilder = NotificationCompat.Builder(this, "N")
-        .setSmallIcon(R.mipmap.ic_launcher)
-        .setContentTitle("Traffic Light")
-        .setChannelId(NOTIFICATION_CHANNEL_ID)
-        .setOngoing(true)
-        .setSilent(true)
-        .setWhen(Long.MAX_VALUE) // Keep above other notifications
-        .setShowWhen(false) // Hide timestamp
+    private val notificationBuilder by lazy {
+        NotificationCompat.Builder(this, "N")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle("Traffic Light")
+            .setChannelId(NOTIFICATION_CHANNEL_ID)
+            .setOngoing(true)
+            .setSilent(true)
+            .setWhen(Long.MAX_VALUE) // Keep above other notifications
+            .setShowWhen(false) // Hide timestamp
+    }
 
     private val screenStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -83,6 +86,10 @@ class UsageService : Service(), KoinComponent {
     var bigIcon = false
     var aodMode = false
 
+    private val formatter by lazy { SizeFormatter() }
+    var minSizeWifi: Long = DataSize(todayUsage.totalWifi.toFloat()).unit.getSize(2)
+    var minSizeMobile: Long = DataSize(todayUsage.totalCellular.toFloat()).unit.getSize(2)
+
     override fun onBind(intent: Intent): IBinder? {
         return null
     }
@@ -95,10 +102,19 @@ class UsageService : Service(), KoinComponent {
             addAction(Intent.ACTION_SCREEN_OFF)
         })
         serviceScope.launch {
-            preferenceRepo.modeAOD.collect { aodMode = it }
+            preferenceRepo.modeAOD.collect {
+                aodMode = it
+            }
+        }
+        serviceScope.launch {
             preferenceRepo.bigIcon.collect {
                 forceUpdate = true
                 bigIcon = it
+            }
+        }
+        serviceScope.launch {
+            preferenceRepo.speedBits.collect {
+                formatter.asBits = it
             }
         }
     }
@@ -140,7 +156,6 @@ class UsageService : Service(), KoinComponent {
                 .setDeleteIntent(
                     onDismissedIntent(this)
                 )
-            notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager?
 
             try {
                 notification?.let {
@@ -164,26 +179,44 @@ class UsageService : Service(), KoinComponent {
             trafficSnapshot.updateSnapshot()
             trafficSnapshot.setCurrentAsLast()
 
-            var dataUsed: Long = 5_000_001
+            var dataUsedWifi = 0L
+            var dataUsedMobile = 0L
+            var lastSpeed = 0
             while (true) {
                 trafficSnapshot.updateSnapshot()
-                val tick = System.nanoTime()
-                while (trafficSnapshot.isCurrentSameAsLast() && System.nanoTime() < tick + 250_000_000) {
-                    delay(100)
-                    trafficSnapshot.updateSnapshot()
+
+
+                /**
+                 * If network speed is changing rapidly, we use this while loop to self-calibrate
+                 * the refresh timing to match the timing of the TrafficStats API updates.
+                 *
+                 * If network speed is not changing rapidly (i.e. it's zero)
+                 * it's quite likely that the next tick will also be zero, so we ignore that and
+                 * simply sleep for 1 second
+                 */
+                if (lastSpeed != 0) {
+                    val tick = System.nanoTime()
+                    while (trafficSnapshot.isCurrentSameAsLast() && System.nanoTime() < tick + 250_000_000) {
+                        delay(100)
+                        trafficSnapshot.updateSnapshot()
+                    }
                 }
 
-                dataUsed += trafficSnapshot.totalSpeed
-                if (dataUsed > 5_000_000) {
-                    hourlyUsageRepo.populateDb()
-                    dataUsed = 0
+                dataUsedWifi += max(trafficSnapshot.wifiSpeed, 0)
+                dataUsedMobile += max(trafficSnapshot.mobileSpeed, 0)
+
+                if (dataUsedWifi > minSizeWifi || dataUsedMobile > minSizeMobile) {
+                    updateDatabase()
+                    if (dataUsedWifi > minSizeWifi) dataUsedWifi = 0
+                    if (dataUsedMobile > minSizeMobile) dataUsedMobile = 0
                 }
+
+                lastSpeed = trafficSnapshot.totalSpeed.toInt()
 
                 updateNotification(trafficSnapshot)
-                updateDatabase()
                 trafficSnapshot.setCurrentAsLast()
 
-                delay(900)
+                delay(if (lastSpeed != 0) 900 else 1000)
             }
         }
     }
@@ -201,39 +234,36 @@ class UsageService : Service(), KoinComponent {
 
             todayUsage = todayUsage.copy(
                 hours = todayUsage.hours.toMutableMap().apply {
-                    this[stamp] = hourlyUsageRepo.getCurrentHourData(stamp, stampNow)
+                    this[stamp] = hourlyUsageRepo.calculateHourData(stamp, stampNow)
                 }
             ).also { it.categorizeUsage() }
         }
+        minSizeWifi = DataSize(todayUsage.totalWifi.toFloat()).unit.getSize(2)
+        minSizeMobile = DataSize(todayUsage.totalCellular.toFloat()).unit.getSize(2)
     }
 
     var lastSnapshot: TrafficSnapshot = TrafficSnapshot(-1)
-    private fun updateNotification(trafficSnapshot: TrafficSnapshot?) {
-        if (lastSnapshot.closeEnough(trafficSnapshot) && !forceUpdate) {
-            forceUpdate = false
-            Log.i("UsageService", "Skipped notification update: ${trafficSnapshot?.totalSpeed}")
-            return
-        }
+    private fun updateNotification(trafficSnapshot: TrafficSnapshot) {
+        val skip = formatter.format(lastSnapshot.totalSpeed, 2, true) ==
+                   formatter.format(trafficSnapshot.totalSpeed, 2, true)
+        if (skip && !forceUpdate) return
+        forceUpdate = false
 
-        val snapshot = trafficSnapshot ?: TrafficSnapshot()
+        lastSnapshot = trafficSnapshot.copy()
 
-        lastSnapshot = snapshot.copy()
-
-        val speedFormatter = SizeFormatter(true, 0)
-        val sizeFormatter = SizeFormatter(false, 2)
-        val title = getString(R.string.speed, speedFormatter.format(snapshot.totalSpeed))
+        val title = getString(R.string.speed, formatter.format(trafficSnapshot.totalSpeed, 2, true))
         val spacing = 18
         val messageShort =
-            getString(R.string.wi_fi, sizeFormatter.format(todayUsage.totalWifi)).clipAndPad(spacing) +
-            getString(R.string.mobile, sizeFormatter.format(todayUsage.totalCellular))
+            getString(R.string.wi_fi, formatter.format(todayUsage.totalWifi, 2)).clipAndPad(spacing) +
+            getString(R.string.mobile, formatter.format(todayUsage.totalCellular, 2))
 
         notification = notificationBuilder
-            .setSmallIcon(createIcon(snapshot))
+            .setSmallIcon(createIcon(trafficSnapshot))
             .setContentTitle(title)
             .setContentText(messageShort)
             .build()
         notification?.flags = Notification.FLAG_ONGOING_EVENT or Notification.FLAG_NO_CLEAR
-        notificationManager?.notify(NOTIFICATION_ID, notification)
+        notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
     private val paint by lazy {
@@ -244,22 +274,33 @@ class UsageService : Service(), KoinComponent {
         }
     }
     private var bitmap: Bitmap? = null
+    private var lastBitmapData: String = ""
     fun createIcon(snapshot: TrafficSnapshot): IconCompat {
         val density = Density(this@UsageService)
         val multiplier = 24 * density.density / 96f * if (bigIcon) 2f else 1f
+        val height = (96 * multiplier).toInt()
 
-        if (bitmap == null) {
-            bitmap = createBitmap((96 * multiplier).toInt(), (96 * multiplier).toInt())
+        val data = formatter.partFormat(snapshot.totalSpeed, true)
+        if (lastBitmapData == data.toString() && !forceUpdate) {
+            Log.e("leekleak","Skipped updating")
+            return IconCompat.createWithBitmap(bitmap!!)
+        } else {
+            lastBitmapData = data.toString()
+        }
+
+        if (bitmap == null || bitmap!!.height != height) {
+            bitmap = createBitmap(height, height)
         } else {
             bitmap?.eraseColor(Color.TRANSPARENT)
         }
 
         val canvas = NativeCanvas(bitmap!!)
 
-        val speedFormatter = SizeFormatter(true)
-        val text = speedFormatter.smartFormat(snapshot.totalSpeed)
-        val speed = text.take(text.indexOfFirst { it.isLetter() })
-        val unit = text.substring(text.indexOfFirst { it.isLetter() })
+        val bytesPerSecond: Boolean = data[2].lowercase() == "b/s"
+        val speed = if (!bytesPerSecond || snapshot.totalSpeed == 0L) {
+            data[0] + if (data[0].length == 1 && data[1].isNotEmpty()) "." + data[1] else ""
+        } else "<1"
+        val unit = if (!bytesPerSecond) data[2] else "K${data[2]}"
 
         paint.apply {
             textSize = 72f * multiplier

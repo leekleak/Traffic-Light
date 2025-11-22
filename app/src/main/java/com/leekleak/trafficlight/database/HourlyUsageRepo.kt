@@ -59,7 +59,7 @@ class HourlyUsageRepo(context: Context) : KoinComponent {
 
             val hour = 3_600_000L
             val currentStamp = dayStamp - (i * hour)
-            val hourData = getCurrentHourData(currentStamp, currentStamp + hour)
+            val hourData = calculateHourData(currentStamp, currentStamp + hour)
 
             if (
                 dao.hourUsageExists(currentStamp) &&
@@ -90,13 +90,13 @@ class HourlyUsageRepo(context: Context) : KoinComponent {
 
         for (k in 0..23) {
             val globalHour = dayStamp + k * 3_600_000L
-            hours[globalHour] = getCurrentHourData(globalHour, globalHour + 3_600_000L)
+            hours[globalHour] = calculateHourData(globalHour, globalHour + 3_600_000L)
         }
 
         return DayUsage(date, hours).also { it.categorizeUsage() }
     }
 
-    fun getCurrentHourData(startTime: Long, endTime: Long): HourData {
+    fun calculateHourData(startTime: Long, endTime: Long): HourData {
         val statsWifi = networkStatsManager?.querySummaryForDevice(NetworkType.Wifi.ordinal, null, startTime, endTime)
         val statsMobile = networkStatsManager?.querySummaryForDevice(NetworkType.Cellular.ordinal, null, startTime, endTime)
 
